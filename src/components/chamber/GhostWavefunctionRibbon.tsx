@@ -100,7 +100,7 @@ export const GhostWavefunctionRibbon: React.FC<GhostWavefunctionRibbonProps> = (
   });
 
   return (
-    <group ref={ribbonGroupRef}>
+    <group ref={ribbonGroupRef} renderOrder={1}>
       {/* Ghost translucent ribbon mesh */}
       <mesh geometry={ribbonGeometry}>
         <meshStandardMaterial

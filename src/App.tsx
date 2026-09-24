@@ -1,14 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import './App.css';
+import { LandingPage } from './components/LandingPage';
+import { StoryModeOverlay } from './components/story/StoryModeOverlay';
 import { LeftPanel } from './components/LeftPanel';
 import { CanvasArea } from './components/CanvasArea';
 import { RightPanel } from './components/RightPanel';
 import { useQuantumState } from './physics/useQuantumState';
 
+type AppRoute = 'landing' | 'sandbox' | 'story-mode';
+
 export const App: React.FC = () => {
+  const [route, setRoute] = useState<AppRoute>('landing');
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [cameraResetTrigger, setCameraResetTrigger] = useState(0);
   const [zoomPct, setZoomPct] = useState(100);
+
+  // Ref forwarded to the well-type toggle container in the left panel
+  const wellToggleRef = useRef<HTMLDivElement | null>(null);
+
+  // Scrolls & briefly highlights the well-type selector when breadcrumb is clicked
+  const handleFocusWellToggle = useCallback(() => {
+    const el = wellToggleRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    el.classList.add('well-toggle-highlight');
+    setTimeout(() => el.classList.remove('well-toggle-highlight'), 900);
+  }, []);
 
   // Unified quantum physics state hook
   const {
@@ -75,9 +92,24 @@ export const App: React.FC = () => {
     setZoomPct((prev) => Math.max(40, prev - 10));
   };
 
-  return (
+  const handleBackToLanding = () => {
+    setRoute('landing');
+  };
+
+  // Route: Landing Page
+  if (route === 'landing') {
+    return (
+      <LandingPage
+        onEnterSandbox={() => setRoute('sandbox')}
+        onEnterStoryMode={() => setRoute('story-mode')}
+      />
+    );
+  }
+
+  // Route: Sandbox or Story Mode — render the full chamber in both cases.
+  // Story mode mounts a transparent overlay on top; the sim stays live.
+  const sandboxJsx = (
     <div className="app-container">
-      {/* Left panel: 280px, fixed height, wired to physics engine */}
       <LeftPanel
         wellType={wellType}
         setWellType={setWellType}
@@ -98,9 +130,9 @@ export const App: React.FC = () => {
         slotB={slotB}
         onSaveSlotA={saveToSlotA}
         onSaveSlotB={saveToSlotB}
+        wellToggleRef={wellToggleRef}
       />
 
-      {/* Center canvas: full-bleed 3D Observation Chamber with TopBar and FloatingToolbar */}
       <CanvasArea
         isRightPanelOpen={isRightPanelOpen}
         onToggleRightPanel={toggleRightPanel}
@@ -126,9 +158,10 @@ export const App: React.FC = () => {
         onZoomChange={setZoomPct}
         slotA={slotA}
         slotB={slotB}
+        onBackToLanding={handleBackToLanding}
+        onFocusWellToggle={handleFocusWellToggle}
       />
 
-      {/* Right panel: 320px, slides in with 200ms ease-out transform */}
       <RightPanel
         isOpen={isRightPanelOpen}
         onClose={closeRightPanel}
@@ -143,8 +176,25 @@ export const App: React.FC = () => {
         slotB={slotB}
         diffStats={diffStats}
       />
+
+      {/* Story mode overlay — mounts on top, pointer-events:none container */}
+      {route === 'story-mode' && (
+        <StoryModeOverlay
+          currentL={L}
+          currentV={V}
+          currentE={activeState?.E ?? 0}
+          displayMode={displayMode}
+          wellType={wellType}
+          activeN={activeN}
+          wavefunctionData={wavefunctionData}
+          onExitToSandbox={() => setRoute('sandbox')}
+          onExitToLanding={handleBackToLanding}
+        />
+      )}
     </div>
   );
+
+  return sandboxJsx;
 };
 
 export default App;

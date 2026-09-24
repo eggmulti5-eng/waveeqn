@@ -1,3 +1,4 @@
+import React from 'react';
 import { Search, BookmarkPlus } from 'lucide-react';
 import type { WellType, StateItem, SavedSlot } from '../physics/useQuantumState';
 
@@ -21,6 +22,7 @@ interface LeftPanelProps {
   slotB: SavedSlot | null;
   onSaveSlotA: () => void;
   onSaveSlotB: () => void;
+  wellToggleRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -42,6 +44,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   slotB,
   onSaveSlotA,
   onSaveSlotB,
+  wellToggleRef,
 }) => {
   return (
     <aside className="left-panel">
@@ -52,9 +55,22 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             <span className="brand-glyph">Ψ</span>
             <span>QUANTUM.WELL</span>
           </div>
-          <span className="status-badge">
-            {wellType === 'infinite' ? 'ANALYTIC' : 'FDM SOLVER'}
-          </span>
+          {/* Fix 4: badge + ? info affordance, consistent between ANALYTIC and NUMERICALLY SOLVED */}
+          <div className="badge-row">
+            <span className="status-badge">
+              {wellType === 'infinite' ? 'ANALYTIC' : 'NUMERICALLY SOLVED'}
+            </span>
+            {wellType === 'finite' && (
+              <button
+                type="button"
+                className="status-badge-info"
+                title="Solved via finite-difference method (FDM): no closed-form solution exists for finite wells, so the wavefunction is computed numerically on a discretized spatial grid."
+                aria-label="About the numerical solver"
+              >
+                ?
+              </button>
+            )}
+          </div>
         </div>
         <div className="sub-header">1D Schrödinger Bound & Barrier Solver</div>
       </div>
@@ -85,7 +101,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       {/* Well Type Toggle: Infinite / Finite */}
-      <div className="well-type-container">
+      <div className="well-type-container" ref={wellToggleRef}>
         <span className="well-type-label">POTENTIAL WELL MODEL</span>
         <div className="toggle-button-group">
           <button

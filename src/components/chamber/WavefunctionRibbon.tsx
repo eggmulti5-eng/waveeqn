@@ -104,7 +104,7 @@ export const WavefunctionRibbon: React.FC<WavefunctionRibbonProps> = ({
   });
 
   return (
-    <group ref={ribbonGroupRef}>
+    <group ref={ribbonGroupRef} renderOrder={1}>
       {/* Extruded ribbon mesh */}
       <mesh geometry={ribbonGeometry}>
         <meshStandardMaterial

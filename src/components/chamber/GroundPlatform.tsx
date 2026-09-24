@@ -68,12 +68,12 @@ export const GroundPlatform: React.FC<GroundPlatformProps> = ({ showGrid = true 
       `,
       transparent: true,
       side: THREE.DoubleSide,
-      depthWrite: true,
+      depthWrite: false,  // Fix 2: don't write to depth buffer so sub-zero ribbon lobes are never occluded
     });
   }, [showGrid]);
 
   return (
-    <group position={[0, -0.01, 0]}>
+    <group position={[0, -0.01, 0]} renderOrder={-1}>
       {/* Tiled platform disc */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} material={material}>
         <circleGeometry args={[7.0, 64]} />

@@ -35,6 +35,8 @@ interface CanvasAreaProps {
   onZoomChange: (pct: number) => void;
   slotA?: SavedSlot | null;
   slotB?: SavedSlot | null;
+  onBackToLanding?: () => void;
+  onFocusWellToggle?: () => void;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({
@@ -62,6 +64,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   onZoomChange,
   slotA = null,
   slotB = null,
+  onBackToLanding,
+  onFocusWellToggle,
 }) => {
   return (
     <main className="canvas-area">
@@ -91,6 +95,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         wellType={wellType}
         activeN={activeN}
         isBound={wavefunctionData.isBound}
+        onBackToLanding={onBackToLanding}
+        onFocusWellToggle={onFocusWellToggle}
       />
 
       {/* Bottom-Center Floating Toolbar */}

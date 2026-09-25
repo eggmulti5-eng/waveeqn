@@ -23,6 +23,7 @@ export interface Beat {
   lines: DialogueLine[];
   isComplete: (ctx: BeatContext) => boolean;
   noAction?: boolean;
+  highlightSelector?: string;
 }
 
 export interface BeatContext {
@@ -37,6 +38,9 @@ export interface BeatContext {
   currentE: number;
   challengeTolerance: number;
   challengeDone: boolean;
+  hasInteractedL: boolean;
+  hasInteractedV: boolean;
+  hasToggledProb: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -63,99 +67,108 @@ function buildBeats(target: number, hint: string, tol: number): Beat[] {
       noAction: true,
       lines: [
         {
-          text: "Hello! I'm AXIOM — your quantum lab guide. Welcome to the Observation Chamber. What you're looking at is a potential well: a region where a particle is trapped by energy barriers on both sides.",
-          shortText: "I'm AXIOM. Welcome to the Observation Chamber.",
+          text: "Greetings, researcher! I'm AXIOM — your quantum guide, lab assistant, and occasional wavefunction whisperer. Welcome to the Observation Chamber! What you're looking at is a potential well: a microscopic trap where energy barriers hold a particle captive.",
+          shortText: "I'm AXIOM, your quantum lab assistant. Welcome to the chamber!",
         },
         {
-          text: 'Physicists study confined particles because quantization — only discrete energies are allowed — is one of quantum mechanics\' most striking departures from classical physics. This bench makes the invisible math visible as a 3D shape.',
-          shortText: 'Quantization makes the invisible math visible in 3D.',
+          text: 'In classical physics, a trapped marble can possess any energy it pleases. But here in the quantum world, quantization takes over — only strict, discrete energies are permitted! This chamber renders that invisible math into tangible 3D geometry.',
+          shortText: 'Quantization forces discrete energies — made tangible in 3D.',
         },
         {
-          text: 'The glowing ribbon is your wavefunction ψ(x). It encodes everything the theory knows about the particle\'s state. Let\'s start exploring.',
-          shortText: 'The ribbon is ψ(x). Let\'s explore.',
+          text: 'See that luminous ribbon floating in the center? That\'s your wavefunction ψ(x). It encodes every physical secret the universe knows about this particle. Let\'s fire up the bench and explore!',
+          shortText: 'The ribbon is ψ(x). Let\'s fire up the bench!',
         },
       ],
-      isComplete: () => false,
+      isComplete: () => true,
     },
     {
       id: 'orientation',
+      highlightSelector: '[data-tour="toolbar-camera"]',
       lines: [
         {
-          text: 'ACTION: Orbit the chamber — left-drag to rotate and get a feel for the 3D geometry. Take a spin; I\'ll wait.',
-          shortText: 'ACTION: Orbit the chamber (left-drag).',
+          text: 'ACTION: Orbit the chamber — click and drag the canvas with your mouse to rotate in 3D space. Give it a spin; I\'ll keep watch right here!',
+          shortText: 'ACTION: Orbit the chamber (left-drag canvas).',
         },
         {
-          text: 'This is the n=1 Ground State of an infinite square well. ψ is shaped like a single arch because the boundary conditions force ψ=0 at both walls — exactly like a vibrating string fixed at both ends.',
-          shortText: 'n=1: single arch — ψ=0 at both walls (boundary conditions).',
+          text: 'Look at that arch! This is the fundamental Ground State (n=1) of an infinite square well. Notice how ψ snaps cleanly to zero at both boundary walls? Exactly like a plucked cello string clamped tight at both ends.',
+          shortText: 'n=1: Single arch — boundary conditions clamp ψ=0 at walls.',
         },
         {
-          text: 'The ribbon height at any x equals ψ(x). The taller the arch, the higher the probability amplitude at that position.',
-          shortText: 'Ribbon height = ψ amplitude.',
+          text: 'The ribbon\'s height above the zero line equals the amplitude ψ(x). The taller the arch, the higher the amplitude. You can also zoom and reset camera anytime using the bottom toolbar. Pure quantum poetry in 3D!',
+          shortText: 'Ribbon height = ψ amplitude. Camera controls in toolbar.',
         },
       ],
       isComplete: (ctx) => ctx.hasOrbited,
     },
     {
       id: 'interaction',
+      highlightSelector: '[data-tour="slider-L"]',
       lines: [
         {
-          text: 'ACTION: Drag the Well Width (L) slider in the left panel. Watch the ribbon reshape and the energy readout update in real time.',
-          shortText: 'ACTION: Drag the L slider.',
+          text: 'ACTION: Over in the left panel, grab the Well Width (L) slider and drag it. Watch the ribbon reshape and the energy readout update in real time!',
+          shortText: 'ACTION: Drag the Well Width (L) slider.',
         },
         {
-          text: 'Wider well → lower energy. The formula is E_n = n²π²ħ² / (2mL²) — energy scales as 1/L². Doubling the well halves confinement and drops E_1 to a quarter of its original value.',
-          shortText: 'E_n ∝ 1/L² — wider well, lower energy.',
+          text: 'Notice that? Wider well → lower energy! The governing formula is E_n = n²π²ħ² / (2mL²) — energy drops quadratically as 1/L². Doubling the well halves the spatial confinement and plunges E_1 to a quarter of its original value!',
+          shortText: 'E_n ∝ 1/L² — wider well relieves confinement pressure.',
         },
         {
-          text: 'This is why atomic energy levels depend so sensitively on atomic radius — a tiny change in confinement shifts the whole spectrum.',
-          shortText: 'Confinement size tunes the entire energy spectrum.',
+          text: 'This extreme sensitivity to confinement size is why atomic spectra shift so dramatically across the periodic table — even a fractional angstrom change in atomic radius reorganizes the whole spectrum!',
+          shortText: 'Confinement scale tunes the entire energy spectrum.',
         },
       ],
-      isComplete: (ctx) => Math.abs(ctx.currentL - ctx.initialL) > 0.3,
+      isComplete: (ctx) => ctx.hasInteractedL || Math.abs(ctx.currentL - ctx.initialL) > 0.001,
     },
     {
       id: 'feedback',
+      highlightSelector: '[data-tour="toolbar-psi"]',
       lines: [
         {
-          text: 'ACTION: Click the |ψ|² button in the bottom toolbar (the right half of the ψ / |ψ|² toggle pair).',
-          shortText: 'ACTION: Toggle to |ψ|² in the toolbar.',
+          text: 'ACTION: Look down at the bottom toolbar and click the |ψ|² button (the right half of the ψ / |ψ|² toggle pill).',
+          shortText: 'ACTION: Toggle to |ψ|² in bottom toolbar.',
         },
         {
-          text: 'ψ itself isn\'t directly measurable — it\'s a complex-valued amplitude that can go negative. But |ψ|² is the probability density: the chance per unit length of finding the particle at position x.',
-          shortText: '|ψ|² = probability density. ψ can be negative; |ψ|² ≥ 0.',
+          text: 'Aha! ψ itself is an abstract complex amplitude that can dip negative — you can\'t build a laboratory detector for negative numbers! But |ψ|² is the Born rule probability density: the physical, measurable chance per unit length of detecting the particle.',
+          shortText: '|ψ|² = probability density. ψ can be negative; |ψ|² is strictly ≥ 0.',
         },
         {
-          text: 'Notice that negative lobes in ψ (for n≥2) become positive peaks in |ψ|². That sign flip is real physics — interference in superpositions depends on the sign of each term.',
-          shortText: 'Negative ψ lobes → positive |ψ|² peaks. Sign matters for interference.',
+          text: 'Notice how any negative lobes in ψ (for n ≥ 2) instantly flip into positive probability peaks in |ψ|²? That sign flip is real physics — quantum interference in superpositions depends entirely on the relative sign of each term!',
+          shortText: 'Negative ψ lobes → positive |ψ|² peaks. Sign governs interference.',
         },
       ],
-      isComplete: (ctx) => ctx.displayMode === 'prob',
+      isComplete: (ctx) => ctx.hasToggledProb || ctx.displayMode === 'prob',
     },
     {
       id: 'escalation',
+      highlightSelector: '[data-tour="well-toggle"]',
       lines: [
         {
-          text: 'ACTION: Switch to FINITE well using the toggle in the left panel, then drag the Barrier Height (V) slider to a lower value.',
+          text: 'ACTION: In the left panel, toggle the model to FINITE, then drag the Barrier Height (V) slider to lower the wall.',
           shortText: 'ACTION: Switch to FINITE well, lower V.',
         },
         {
-          text: 'With a finite barrier, ψ doesn\'t snap to zero at the walls — it decays exponentially into the classically forbidden region. The particle genuinely has a non-zero probability of existing outside the well.',
-          shortText: 'Finite well: ψ decays exponentially outside — classically impossible.',
+          text: 'Now things get wild! With a finite barrier, ψ doesn\'t snap to zero at the walls — it bleeds right through into the classically forbidden zone as an exponential tail. The particle genuinely has a non-zero probability of being detected outside the well!',
+          shortText: 'Finite well: ψ decays exponentially outside — classically impossible!',
         },
         {
-          text: 'This is quantum tunnelling. At transistor scales below ~5 nm, tunnelling is the dominant leakage mechanism engineers design around. Lower V to watch the tails grow and the energy dip below the infinite-well prediction.',
-          shortText: 'Tunnelling drives leakage in nm-scale transistors. Lower V to see it.',
+          text: 'This is quantum tunnelling! At transistor gate scales below 5 nm, tunnelling is the dominant leakage headache chip designers battle every day. Watch those ghostly tails spread as you drop V!',
+          shortText: 'Quantum tunnelling drives nm-scale transistor leakage.',
         },
       ],
       isComplete: (ctx) =>
-        ctx.wellType === 'finite' && ctx.currentV < ctx.initialV - 5,
+        ctx.hasInteractedV ||
+        (ctx.wellType === 'finite' &&
+          (ctx.currentV < ctx.initialV ||
+            Math.abs(ctx.currentV - ctx.initialV) >= 1 ||
+            ctx.currentV < 60)),
     },
     {
       id: 'challenge',
+      highlightSelector: '[data-tour="slider-L"]',
       lines: [
         {
-          text: `CHALLENGE — Match the Wave! Switch back to INFINITE well and set n=2. Then reshape the well via the L slider until the displayed E_n matches the target within ±${tol.toFixed(2)} a.u.\n\nTarget E = ${target.toFixed(3)} a.u. (${hint})`,
-          shortText: `CHALLENGE — Match E_n to ${target.toFixed(3)} ±${tol.toFixed(2)} a.u. Use n=2, infinite well, adjust L. (${hint})`,
+          text: `CHALLENGE — Match the Wave! Ready to test your quantum intuition? Switch back to an INFINITE well, select n=2, and tune the L slider until your displayed E_n matches the target energy within ±${tol.toFixed(2)} a.u.\n\nTarget E = ${target.toFixed(3)} a.u. (${hint})`,
+          shortText: `CHALLENGE — Match E_n to ${target.toFixed(3)} ±${tol.toFixed(2)} a.u. Use n=2, infinite well, tune L. (${hint})`,
         },
       ],
       isComplete: (ctx) => ctx.challengeDone,
@@ -165,15 +178,15 @@ function buildBeats(target: number, hint: string, tol: number): Beat[] {
       noAction: true,
       lines: [
         {
-          text: "Excellent work! You've navigated from a simple arching wavefunction all the way to quantum tunnelling — the core of modern quantum mechanics in about ten minutes.",
-          shortText: "Great work! You've covered quantum confinement and tunnelling.",
+          text: "Phenomenal work, researcher! You navigated from a humble arching ground state all the way through confinement scaling, Born probability, and quantum tunnelling in record time.",
+          shortText: "Phenomenal work! You've mastered confinement, probability, and tunnelling.",
         },
         {
-          text: 'Below you\'ll find a summary of what you explored this session, and a button to export the current wavefunction curve as a PNG — useful for your lab report.',
-          shortText: 'Export your wavefunction below for your lab report.',
+          text: 'Your quantum logbook is compiled below. Review your visited states, or hit the export button to save your custom wavefunction ribbon as a high-resolution PNG for your lab report. When you\'re ready, jump into Sandbox mode for unrestricted experimentation!',
+          shortText: 'Export your wavefunction below or enter Sandbox mode!',
         },
       ],
-      isComplete: () => false,
+      isComplete: () => true,
     },
   ];
 }
@@ -220,8 +233,6 @@ export interface StoryModeInput {
 export function useStoryMode(input: StoryModeInput): StoryModeControls {
   const challengeTolerance = 0.12;
   const challengeRef = useRef(generateChallengeTarget());
-  const initialLRef = useRef(input.currentL);
-  const initialVRef = useRef(input.currentV);
 
   // Build beats once (stable reference)
   const beatsRef = useRef<Beat[]>(
@@ -236,6 +247,50 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
   const [lineIndex, setLineIndex] = useState(0);
   const [skipTheory, setSkipTheory] = useState(false);
   const [hasOrbited, setHasOrbited] = useState(false);
+  const [hasInteractedL, setHasInteractedL] = useState(false);
+  const [hasInteractedV, setHasInteractedV] = useState(false);
+  const [hasToggledProb, setHasToggledProb] = useState(false);
+
+  // Per-beat start values (snapshot taken whenever beatIndex changes)
+  const beatStartLRef = useRef(input.currentL);
+  const beatStartVRef = useRef(input.currentV);
+
+  // When beatIndex changes, snapshot initial values and reset per-beat interaction flags
+  useEffect(() => {
+    beatStartLRef.current = input.currentL;
+    beatStartVRef.current = input.currentV;
+    setHasInteractedL(false);
+    setHasInteractedV(false);
+    setHasToggledProb(input.displayMode === 'prob');
+  }, [beatIndex]);
+
+  // Track live user actions for active beat
+  useEffect(() => {
+    // Interaction beat: any movement in L
+    if (beatIndex === 2) {
+      if (Math.abs(input.currentL - beatStartLRef.current) > 0.001) {
+        setHasInteractedL(true);
+      }
+    }
+    // Feedback beat: toggle to prob
+    if (beatIndex === 3) {
+      if (input.displayMode === 'prob') {
+        setHasToggledProb(true);
+      }
+    }
+    // Escalation beat: switch to finite and adjust/lower V
+    if (beatIndex === 4) {
+      if (
+        input.wellType === 'finite' &&
+        (input.currentV < beatStartVRef.current ||
+          Math.abs(input.currentV - beatStartVRef.current) >= 1 ||
+          input.currentV < 60)
+      ) {
+        setHasInteractedV(true);
+      }
+    }
+  }, [beatIndex, input.currentL, input.currentV, input.wellType, input.displayMode]);
+
   const visitedNsRef = useRef<Set<number>>(new Set([1]));
   const visitedWellTypesRef = useRef<Set<WellType>>(new Set(['infinite']));
 
@@ -252,16 +307,19 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
 
   const fullCtx: BeatContext = {
     hasOrbited,
-    initialL: initialLRef.current,
+    initialL: beatStartLRef.current,
     currentL: input.currentL,
     displayMode: input.displayMode,
     wellType: input.wellType,
     currentV: input.currentV,
-    initialV: initialVRef.current,
+    initialV: beatStartVRef.current,
     challengeTarget: challengeRef.current.target,
     currentE: input.currentE,
     challengeTolerance,
     challengeDone,
+    hasInteractedL,
+    hasInteractedV,
+    hasToggledProb,
   };
 
   const isBeatActionDone = currentBeat?.isComplete(fullCtx) ?? false;
@@ -291,8 +349,8 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
       challengeHint: challengeRef.current.hint,
       challengeTolerance,
       hasOrbited,
-      initialL: initialLRef.current,
-      initialV: initialVRef.current,
+      initialL: beatStartLRef.current,
+      initialV: beatStartVRef.current,
       visitedNs: visitedNsRef.current,
       visitedWellTypes: visitedWellTypesRef.current,
       beats,

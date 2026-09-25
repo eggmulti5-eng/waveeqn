@@ -36,7 +36,6 @@ interface CanvasAreaProps {
   slotA?: SavedSlot | null;
   slotB?: SavedSlot | null;
   onBackToLanding?: () => void;
-  onFocusWellToggle?: () => void;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({
@@ -65,7 +64,6 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   slotA = null,
   slotB = null,
   onBackToLanding,
-  onFocusWellToggle,
 }) => {
   return (
     <main className="canvas-area">
@@ -88,15 +86,11 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         slotB={slotB}
       />
 
-      {/* Top Bar Over Canvas with live breadcrumb */}
+      {/* Top Bar Over Canvas with home button */}
       <TopBar
         isRightPanelOpen={isRightPanelOpen}
         onToggleRightPanel={onToggleRightPanel}
-        wellType={wellType}
-        activeN={activeN}
-        isBound={wavefunctionData.isBound}
         onBackToLanding={onBackToLanding}
-        onFocusWellToggle={onFocusWellToggle}
       />
 
       {/* Bottom-Center Floating Toolbar */}

@@ -43,24 +43,26 @@
   width: 280px;
 }
 
-/* Dialogue box — bottom-centre, clear of floating toolbar (80px bottom pad) */
+/* Dialogue box — bottom-centre, clear of floating toolbar (80px bottom margin) */
 .story-dialogue-anchor {
   position: relative;
-  padding: 0 24px 80px 24px;
+  padding: 0 24px;
+  margin-bottom: 80px;
   width: 100%;
   max-width: 900px;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ==========================================================================
    STORY DIALOGUE BOX (retro JRPG HUD element)
    ========================================================================== */
 .story-dialogue {
+  position: relative;
   background-color: var(--bg-panel);
   border: 2px solid var(--border-accent);
   border-radius: 8px;
   box-shadow: 0 8px 40px rgba(58, 51, 42, 0.22), 0 0 0 1px var(--border-panel);
-  overflow: hidden;
   user-select: none;
 }
 
@@ -109,6 +111,31 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.story-toggle-tour {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  border: 1px solid var(--accent);
+  background-color: rgba(139, 74, 59, 0.08);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.story-toggle-tour:hover {
+  background-color: var(--accent);
+  color: var(--accent-active-text);
+  box-shadow: 0 2px 8px rgba(139, 74, 59, 0.3);
+}
+.story-toggle-tour.active {
+  background-color: var(--accent);
+  color: var(--accent-active-text);
 }
 
 .story-toggle-theory {
@@ -166,54 +193,59 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 16px 14px;
+  padding: 14px 12px;
   border-right: 1px solid var(--border-panel);
   background-color: rgba(139, 74, 59, 0.06);
-  min-width: 70px;
+  min-width: 72px;
   flex-shrink: 0;
 }
 
 .story-avatar-inner {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.axiom-pixel-portrait {
+  animation: axiom-bob 2.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes axiom-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-2px); }
+}
+
+.axiom-pixel-portrait.typing {
+  animation: axiom-typing-bob 0.8s ease-in-out infinite;
+}
+
+@keyframes axiom-typing-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-1px); }
 }
 
 .story-avatar-pulse {
   position: absolute;
-  inset: -4px;
-  border-radius: 50%;
+  inset: -3px;
+  border-radius: 8px;
   border: 1.5px solid var(--accent);
-  opacity: 0.4;
+  opacity: 0.35;
   animation: story-avatar-ring 2.4s ease-in-out infinite;
+  pointer-events: none;
 }
 @keyframes story-avatar-ring {
-  0%, 100% { transform: scale(1);   opacity: 0.4; }
-  50%       { transform: scale(1.1); opacity: 0.15; }
-}
-
-.story-avatar-glyph {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background-color: var(--accent);
-  color: var(--accent-active-text);
-  font-size: 22px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
+  0%, 100% { transform: scale(1);   opacity: 0.35; }
+  50%       { transform: scale(1.06); opacity: 0.12; }
 }
 
 .story-avatar-name {
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: var(--accent);
   text-transform: uppercase;
 }
@@ -498,4 +530,326 @@
   color: var(--ink-muted);
   text-align: center;
   letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   REACTIVE QUIP BUBBLE
+   ========================================================================== */
+.story-quip-bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 14px;
+  max-width: 480px;
+  padding: 8px 14px;
+  background-color: var(--bg-panel);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(28, 24, 20, 0.28), 0 0 10px rgba(139, 74, 59, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink);
+  animation: quipPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.story-quip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 32px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--accent) transparent transparent transparent;
+}
+
+@keyframes quipPopIn {
+  0% { opacity: 0; transform: translateY(6px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.story-quip-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.story-quip-text {
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   SPOTLIGHT & FEATURE TOUR
+   ========================================================================== */
+.story-spotlight-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.story-spotlight-hole {
+  box-sizing: border-box;
+}
+
+.story-spotlight-beacon {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1.5px dashed var(--accent);
+  opacity: 0.6;
+  animation: beaconPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes beaconPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 0.25; transform: scale(1.02); }
+}
+
+.story-tour-card {
+  background-color: var(--bg-panel);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(24, 20, 16, 0.48), 0 0 18px rgba(139, 74, 59, 0.25);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: tourCardIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  z-index: 930;
+}
+
+@keyframes tourCardIn {
+  0% { opacity: 0; transform: translateY(6px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.story-tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.story-tour-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story-tour-tag {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background-color: rgba(139, 74, 59, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--border-accent);
+}
+
+.story-tour-counter {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.story-tour-close-btn {
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.12s ease;
+}
+
+.story-tour-close-btn:hover {
+  color: var(--accent);
+  background-color: var(--surface-hover);
+}
+
+.story-tour-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.story-tour-title-sparkle {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.story-tour-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.story-tour-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.story-tour-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(139, 74, 59, 0.08);
+  border: 1px solid var(--border-accent);
+  border-radius: 6px;
+}
+
+.story-tour-text-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.story-tour-text {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.story-tour-tip {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--ink-muted);
+  background-color: var(--input-bg);
+  padding: 5px 8px;
+  border-radius: 4px;
+  border-left: 2.5px solid var(--accent);
+}
+
+.story-tour-tip-label {
+  font-weight: 700;
+  color: var(--accent);
+  margin-right: 2px;
+}
+
+.story-tour-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-panel);
+}
+
+.story-tour-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.story-tour-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--border-panel);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.story-tour-dot.active {
+  background-color: var(--accent);
+  transform: scale(1.3);
+}
+
+.story-tour-nav-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.story-tour-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-panel);
+  background-color: transparent;
+  color: var(--ink-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.story-tour-nav-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--ink);
+}
+
+.story-tour-nav-btn.primary {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-active-text);
+}
+
+.story-tour-nav-btn.primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 8px rgba(139, 74, 59, 0.35);
+}
+
+/* ==========================================================================
+   HOTSPOT BEACON PINS
+   ========================================================================== */
+.story-hotspot-pin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background-color: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(139, 74, 59, 0.4);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  position: relative;
+}
+
+.story-hotspot-pin:hover {
+  transform: scale(1.2);
+  background-color: #a45846;
+}
+
+.story-hotspot-pulse {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  opacity: 0.5;
+  animation: hotspotRing 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hotspotRing {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.story-hotspot-icon {
+  line-height: 1;
+  pointer-events: none;
 }

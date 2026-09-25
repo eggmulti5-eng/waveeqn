@@ -118,7 +118,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <span className="choice-icon">▸</span>
             <span className="choice-label">STORY MODE</span>
-            <span className="choice-desc">Guided walkthrough — coming soon</span>
+            <span className="choice-desc">Guided interactive quantum lab tour</span>
           </button>
         </div>
 

@@ -115,6 +115,7 @@ export const WavefunctionRibbon: React.FC<WavefunctionRibbonProps> = ({
           side={THREE.DoubleSide}
           transparent
           opacity={0.88}
+          depthWrite={false}
         />
       </mesh>
 

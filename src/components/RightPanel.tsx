@@ -40,6 +40,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     <aside
       className={`right-panel ${isOpen ? 'open' : ''}`}
       aria-hidden={!isOpen}
+      data-tour="inspector"
     >
       {/* Panel Header */}
       <div className="panel-header">
@@ -73,7 +74,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         </div>
 
         {/* Section: Stat Rows */}
-        <div className="panel-section">
+        <div className="panel-section" data-tour="inspector-stats">
           <div className="section-label">QUANTUM STATS</div>
 
           <div className="param-row">
@@ -109,7 +110,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
 
         {/* Section: Comparative DIFF Block (Rendered when Compare is active and both slots filled) */}
         {isCompareActive && slotA && slotB && diffStats && (
-          <div className="panel-section diff-section">
+          <div className="panel-section diff-section" data-tour="inspector-diff">
             <div className="section-label-row">
               <span className="section-label diff-label">DIFF (SLOT B − SLOT A)</span>
               <span className="diff-active-tag">
@@ -172,7 +173,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         )}
 
         {/* Section: Allowed Dipole Transitions */}
-        <div className="panel-section">
+        <div className="panel-section" data-tour="inspector-transitions">
           <div className="section-label-row">
             <span className="section-label">ALLOWED TRANSITIONS (Δn ODD)</span>
             <span className="dipole-rule-tag" title="Dipole parity selection rule: Δn must be odd">

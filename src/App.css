@@ -1314,18 +1314,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  max-width: 600px;
-  padding: 40px 32px;
+  gap: 32px;
+  max-width: 720px;
+  padding: 48px 36px;
 }
 
 .landing-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 10px;
+  gap: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
@@ -1334,30 +1334,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background-color: var(--accent);
   color: var(--accent-active-text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   border-radius: 4px;
 }
 
 .landing-title {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
   color: var(--ink);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .landing-subtitle {
-  font-size: 12px;
+  font-size: 13.5px;
   line-height: 1.7;
   text-align: center;
   color: var(--ink-muted);
-  max-width: 420px;
+  max-width: 500px;
 }
 
 /* ---- Animated Equation ---- */
@@ -1365,19 +1365,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 20px 32px;
+  gap: 18px;
+  padding: 24px 44px;
   background-color: var(--bg-panel);
   border: 1px solid var(--border-panel);
-  border-radius: 8px;
-  box-shadow: var(--shadow-panel);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(58, 51, 42, 0.08);
 }
 
 .landing-equation {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 22px;
+  gap: 6px;
+  font-size: 26px;
   font-weight: 500;
   color: var(--ink);
   font-family: var(--font-family);
@@ -1412,7 +1412,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.15;
   vertical-align: middle;
 }
@@ -1420,12 +1420,12 @@
 .eq-frac-num,
 .eq-frac-den {
   text-align: center;
-  padding: 0 3px;
+  padding: 0 4px;
 }
 
 .eq-frac-bar {
   width: 100%;
-  height: 1px;
+  height: 1.5px;
   background-color: var(--ink);
 }
 
@@ -1435,7 +1435,7 @@
 }
 
 .eq-operator {
-  margin: 0 4px;
+  margin: 0 5px;
   color: var(--ink-muted);
 }
 
@@ -1453,8 +1453,8 @@
 
 /* Animated psi curve SVG */
 .landing-psi-curve {
-  width: 260px;
-  height: 56px;
+  width: 300px;
+  height: 64px;
 }
 
 .psi-curve-path {
@@ -1481,9 +1481,9 @@
 /* ---- Entry Choices ---- */
 .landing-choices {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
-  max-width: 460px;
+  max-width: 520px;
 }
 
 .landing-choice-btn {
@@ -1491,9 +1491,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 22px 16px 18px 16px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 24px 20px 20px 20px;
+  border-radius: 10px;
   border: 1px solid var(--border-panel);
   background-color: var(--bg-panel);
   cursor: pointer;
@@ -1503,7 +1503,7 @@
 
 .landing-choice-btn:hover {
   border-color: var(--accent);
-  box-shadow: 0 4px 16px rgba(139, 74, 59, 0.12);
+  box-shadow: 0 6px 20px rgba(139, 74, 59, 0.14);
   transform: translateY(-2px);
 }
 
@@ -1522,7 +1522,7 @@
 }
 
 .choice-icon {
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
   color: var(--accent);
 }
@@ -1532,7 +1532,7 @@
 }
 
 .choice-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1540,19 +1540,19 @@
 }
 
 .choice-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--ink-muted);
   text-align: center;
   line-height: 1.5;
 }
 
 .landing-footer-note {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 /* ==========================================================================

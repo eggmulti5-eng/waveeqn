@@ -22,7 +22,6 @@ interface LeftPanelProps {
   slotB: SavedSlot | null;
   onSaveSlotA: () => void;
   onSaveSlotB: () => void;
-  wellToggleRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -44,7 +43,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   slotB,
   onSaveSlotA,
   onSaveSlotB,
-  wellToggleRef,
 }) => {
   return (
     <aside className="left-panel">
@@ -101,7 +99,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       {/* Well Type Toggle: Infinite / Finite */}
-      <div className="well-type-container" ref={wellToggleRef}>
+      <div className="well-type-container" data-tour="well-toggle">
         <span className="well-type-label">POTENTIAL WELL MODEL</span>
         <div className="toggle-button-group">
           <button
@@ -122,7 +120,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       {/* Comparative Slots Control Deck (Layer 6) */}
-      <div className="slots-container">
+      <div className="slots-container" data-tour="slots">
         <span className="slots-label">COMPARISON SLOTS</span>
         <div className="slots-button-group">
           <button
@@ -158,9 +156,9 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       {/* Parameter Sliders: L, m, and V */}
-      <div className="sliders-container">
+      <div className="sliders-container" data-tour="sliders">
         {/* Slider L (width) */}
-        <div className="slider-row">
+        <div className="slider-row" data-tour="slider-L">
           <div className="slider-header">
             <span className="slider-name">Well Width (L)</span>
             <span className="slider-val-badge">{L.toFixed(1)} a.u.</span>
@@ -172,13 +170,14 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             step="0.1"
             value={L}
             onChange={(e) => setL(parseFloat(e.target.value))}
+            onInput={(e) => setL(parseFloat((e.target as HTMLInputElement).value))}
             className="quantum-range-input"
             aria-label="Well Width L"
           />
         </div>
 
         {/* Slider m (mass) */}
-        <div className="slider-row">
+        <div className="slider-row" data-tour="slider-m">
           <div className="slider-header">
             <span className="slider-name">Particle Mass (m)</span>
             <span className="slider-val-badge">{m.toFixed(1)} m₀</span>
@@ -190,13 +189,17 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             step="0.1"
             value={m}
             onChange={(e) => setM(parseFloat(e.target.value))}
+            onInput={(e) => setM(parseFloat((e.target as HTMLInputElement).value))}
             className="quantum-range-input"
             aria-label="Particle Mass m"
           />
         </div>
 
         {/* Slider V (barrier height, finite-well only) */}
-        <div className={`slider-row ${wellType === 'infinite' ? 'disabled' : ''}`}>
+        <div
+          className={`slider-row ${wellType === 'infinite' ? 'disabled' : ''}`}
+          data-tour="slider-V"
+        >
           <div className="slider-header">
             <span className="slider-name">Barrier Height (V)</span>
             <span className="slider-val-badge">
@@ -211,6 +214,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             value={V}
             disabled={wellType === 'infinite'}
             onChange={(e) => setV(parseFloat(e.target.value))}
+            onInput={(e) => setV(parseFloat((e.target as HTMLInputElement).value))}
             className="quantum-range-input"
             aria-label="Barrier Height V"
           />
@@ -238,7 +242,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       </div>
 
       {/* Scrollable State List n=1..8 */}
-      <div className="list-container">
+      <div className="list-container" data-tour="state-list">
         <div className="list-section-header">
           <span>EIGENSTATES (n = 1..8)</span>
           <span>ENERGY (Eₙ)</span>

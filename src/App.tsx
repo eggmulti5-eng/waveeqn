@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import './App.css';
 import { LandingPage } from './components/LandingPage';
 import { StoryModeOverlay } from './components/story/StoryModeOverlay';
@@ -15,19 +15,8 @@ export const App: React.FC = () => {
   const [cameraResetTrigger, setCameraResetTrigger] = useState(0);
   const [zoomPct, setZoomPct] = useState(100);
 
-  // Ref forwarded to the well-type toggle container in the left panel
-  const wellToggleRef = useRef<HTMLDivElement | null>(null);
-
-  // Scrolls & briefly highlights the well-type selector when breadcrumb is clicked
-  const handleFocusWellToggle = useCallback(() => {
-    const el = wellToggleRef.current;
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    el.classList.add('well-toggle-highlight');
-    setTimeout(() => el.classList.remove('well-toggle-highlight'), 900);
-  }, []);
-
   // Unified quantum physics state hook
+  const quantumState = useQuantumState();
   const {
     wellType,
     setWellType,
@@ -61,7 +50,10 @@ export const App: React.FC = () => {
     saveToSlotA,
     saveToSlotB,
     diffStats,
-  } = useQuantumState();
+    saveSandboxSnapshot,
+    restoreSandboxSnapshot,
+    resetToStoryDefaults,
+  } = quantumState;
 
   // On state selection: update active state and slide in the right panel!
   const handleSelectState = (n: number) => {
@@ -96,12 +88,29 @@ export const App: React.FC = () => {
     setRoute('landing');
   };
 
+  // ── Story Mode state isolation ──────────────────────────────────────────
+  const handleEnterStoryMode = useCallback(() => {
+    saveSandboxSnapshot();        // save sandbox state before switching
+    resetToStoryDefaults();       // clean slate for story mode
+    setRoute('story-mode');
+  }, [saveSandboxSnapshot, resetToStoryDefaults]);
+
+  const handleExitStoryToSandbox = useCallback(() => {
+    restoreSandboxSnapshot();     // restore sandbox's last state
+    setRoute('sandbox');
+  }, [restoreSandboxSnapshot]);
+
+  const handleExitStoryToLanding = useCallback(() => {
+    restoreSandboxSnapshot();     // restore sandbox so it's clean next time
+    setRoute('landing');
+  }, [restoreSandboxSnapshot]);
+
   // Route: Landing Page
   if (route === 'landing') {
     return (
       <LandingPage
         onEnterSandbox={() => setRoute('sandbox')}
-        onEnterStoryMode={() => setRoute('story-mode')}
+        onEnterStoryMode={handleEnterStoryMode}
       />
     );
   }
@@ -130,7 +139,6 @@ export const App: React.FC = () => {
         slotB={slotB}
         onSaveSlotA={saveToSlotA}
         onSaveSlotB={saveToSlotB}
-        wellToggleRef={wellToggleRef}
       />
 
       <CanvasArea
@@ -159,7 +167,6 @@ export const App: React.FC = () => {
         slotA={slotA}
         slotB={slotB}
         onBackToLanding={handleBackToLanding}
-        onFocusWellToggle={handleFocusWellToggle}
       />
 
       <RightPanel
@@ -187,8 +194,9 @@ export const App: React.FC = () => {
           wellType={wellType}
           activeN={activeN}
           wavefunctionData={wavefunctionData}
-          onExitToSandbox={() => setRoute('sandbox')}
-          onExitToLanding={handleBackToLanding}
+          onExitToSandbox={handleExitStoryToSandbox}
+          onExitToLanding={handleExitStoryToLanding}
+          onOpenRightPanel={() => setIsRightPanelOpen(true)}
         />
       )}
     </div>

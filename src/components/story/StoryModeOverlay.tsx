@@ -2,17 +2,19 @@
  * StoryModeOverlay
  * ----------------
  * Renders on top of the existing sandbox (LeftPanel + CanvasArea + RightPanel).
- * It does NOT fork or replace the simulation — it reads live sim state via
- * props and injects a dialogue box + optional HUD over the canvas.
+ * It reads live sim state via props and injects a dialogue box + optional HUD +
+ * spotlight guide over the canvas.
  *
  * The sandbox beneath remains fully interactive at all times.
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './story.css';
 import { useStoryMode } from './useStoryMode';
 import { StoryDialogue } from './StoryDialogue';
 import { ChallengeHUD } from './ChallengeHUD';
 import { ReportScreen } from './ReportScreen';
+import { StorySpotlight } from './StorySpotlight';
+import { StoryHotspots } from './StoryHotspots';
 import type { WellType, WavefunctionData } from '../../physics/useQuantumState';
 
 interface StoryModeOverlayProps {
@@ -27,6 +29,7 @@ interface StoryModeOverlayProps {
   // Callbacks
   onExitToSandbox: () => void;     // Skip to sandbox (no reset)
   onExitToLanding: () => void;     // Back to landing
+  onOpenRightPanel?: () => void;   // Open right panel for inspector tour step
 }
 
 export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
@@ -39,6 +42,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   wavefunctionData,
   onExitToSandbox,
   onExitToLanding,
+  onOpenRightPanel,
 }) => {
   const storyControls = useStoryMode({
     currentL,
@@ -60,6 +64,9 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
     markOrbited,
     recordVisit,
   } = storyControls;
+
+  // ── UI Feature Tour state ────────────────────────────────────────────────
+  const [activeTourStepIndex, setActiveTourStepIndex] = useState<number | null>(null);
 
   // ── Orbit detection ──────────────────────────────────────────────────────
   // Intercept pointer-move on the canvas to detect orbit (drag with left button)
@@ -102,8 +109,24 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   const isChallengeBeat = currentBeat?.id === 'challenge';
   const totalBeats = state.beats.length;
 
-  // Challenge done: auto-advance the beat after a short delay so the user
-  // sees the success badge, then moves to the report beat.
+  // Auto-advance when a non-challenge beat's action is completed
+  const prevBeatActionDoneRef = useRef(false);
+  useEffect(() => {
+    if (isChallengeBeat || currentBeat?.noAction) {
+      prevBeatActionDoneRef.current = false;
+      return;
+    }
+    if (isBeatActionDone && !prevBeatActionDoneRef.current && isLastLine) {
+      prevBeatActionDoneRef.current = true;
+      const t = setTimeout(() => advance(), 600);
+      return () => clearTimeout(t);
+    }
+    if (!isBeatActionDone) {
+      prevBeatActionDoneRef.current = false;
+    }
+  }, [isBeatActionDone, isLastLine, isChallengeBeat, currentBeat?.noAction, advance]);
+
+  // Challenge done auto-advance
   const challengeDoneRef = useRef(false);
   useEffect(() => {
     if (!isChallengeBeat) return;
@@ -112,7 +135,6 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
       wellType === 'infinite';
     if (done && !challengeDoneRef.current) {
       challengeDoneRef.current = true;
-      // Give the user 1.4 s to see the WIN badge, then auto-advance
       const t = setTimeout(() => advance(), 1400);
       return () => clearTimeout(t);
     }
@@ -122,7 +144,6 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   if (isReportBeat && isLastLine) {
     return (
       <div className="story-overlay">
-        {/* Semi-transparent dim so report pops */}
         <div className="story-overlay-dim" />
         <div className="story-overlay-report-wrapper">
           <ReportScreen
@@ -140,7 +161,21 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
 
   return (
     <div className="story-overlay" style={{ pointerEvents: 'none' }}>
-      {/* ── Challenge HUD (top-right, above canvas, pointer-events restored) ── */}
+      {/* ── Feature Tour Spotlight Layer ── */}
+      <StorySpotlight
+        activeTourStepIndex={activeTourStepIndex}
+        onSelectStepIndex={setActiveTourStepIndex}
+        onOpenRightPanel={onOpenRightPanel}
+        highlightSelector={activeTourStepIndex === null ? currentBeat?.highlightSelector : null}
+      />
+
+      {/* ── Optional UI Hotspots (beacon pins over major sections) ── */}
+      <StoryHotspots
+        isVisible={activeTourStepIndex === null && !isReportBeat}
+        onSelectStepIndex={setActiveTourStepIndex}
+      />
+
+      {/* ── Challenge HUD (top-right, above canvas) ── */}
       {isChallengeBeat && (
         <div className="story-challenge-hud-anchor" style={{ pointerEvents: 'auto' }}>
           <ChallengeHUD
@@ -153,7 +188,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
         </div>
       )}
 
-      {/* ── Dialogue box (bottom of canvas, pointer-events restored) ── */}
+      {/* ── Dialogue box (bottom of canvas) ── */}
       <div className="story-dialogue-anchor" style={{ pointerEvents: 'auto' }}>
         <StoryDialogue
           beat={currentBeat}
@@ -169,6 +204,13 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
           onSetSkipTheory={setSkipTheory}
           onAdvance={advance}
           onSkipAll={onExitToSandbox}
+          currentL={currentL}
+          currentV={currentV}
+          wellType={wellType}
+          isTourActive={activeTourStepIndex !== null}
+          onToggleTour={() =>
+            setActiveTourStepIndex((prev) => (prev === null ? 0 : null))
+          }
         />
       </div>
     </div>

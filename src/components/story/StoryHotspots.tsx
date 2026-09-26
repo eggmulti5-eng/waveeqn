@@ -1,5 +1,4 @@
 import React from 'react';
-import { HelpCircle } from 'lucide-react';
 import { TOUR_STEPS } from './StorySpotlight';
 
 interface StoryHotspotsProps {
@@ -26,7 +25,6 @@ export const StoryHotspots: React.FC<StoryHotspotsProps> = ({
         return (
           <HotspotBeacon
             key={step.id}
-            stepIndex={index}
             selector={step.selector}
             label={step.title}
             onClick={() => onSelectStepIndex(index)}
@@ -38,14 +36,12 @@ export const StoryHotspots: React.FC<StoryHotspotsProps> = ({
 };
 
 interface HotspotBeaconProps {
-  stepIndex: number;
   selector: string;
   label: string;
   onClick: () => void;
 }
 
 const HotspotBeacon: React.FC<HotspotBeaconProps> = ({
-  stepIndex,
   selector,
   label,
   onClick,

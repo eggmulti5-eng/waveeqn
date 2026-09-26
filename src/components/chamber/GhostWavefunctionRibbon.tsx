@@ -72,11 +72,15 @@ export const GhostWavefunctionRibbon: React.FC<GhostWavefunctionRibbonProps> = (
     ribbonGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     ribbonGeo.setIndex(indices);
     ribbonGeo.computeVertexNormals();
+    ribbonGeo.computeBoundingBox();
+    ribbonGeo.computeBoundingSphere();
 
     const curtainGeo = new THREE.BufferGeometry();
     curtainGeo.setAttribute('position', new THREE.Float32BufferAttribute(curtainVertices, 3));
     curtainGeo.setIndex(curtainIndices);
     curtainGeo.computeVertexNormals();
+    curtainGeo.computeBoundingBox();
+    curtainGeo.computeBoundingSphere();
 
     const spineGeo = new THREE.BufferGeometry().setFromPoints(spinePoints);
 

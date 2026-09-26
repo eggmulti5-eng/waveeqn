@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import './App.css';
 import { LandingPage } from './components/LandingPage';
 import { StoryModeOverlay } from './components/story/StoryModeOverlay';
@@ -6,6 +6,8 @@ import { LeftPanel } from './components/LeftPanel';
 import { CanvasArea } from './components/CanvasArea';
 import { RightPanel } from './components/RightPanel';
 import { useQuantumState } from './physics/useQuantumState';
+import { StorySpotlight } from './components/story/StorySpotlight';
+import { StoryHotspots } from './components/story/StoryHotspots';
 
 type AppRoute = 'landing' | 'sandbox' | 'story-mode';
 
@@ -54,6 +56,20 @@ export const App: React.FC = () => {
     restoreSandboxSnapshot,
     resetToStoryDefaults,
   } = quantumState;
+
+  // ── UI Tour State ───────────────────────────────────────────────────────
+  const [isTourModeEnabled, setIsTourModeEnabled] = useState(false);
+  const [activeTourStepIndex, setActiveTourStepIndex] = useState<number | null>(null);
+  const [showNewHere, setShowNewHere] = useState(true);
+
+  const handleToggleTourMode = useCallback(() => {
+    setIsTourModeEnabled((prev) => {
+      const next = !prev;
+      if (!next) setActiveTourStepIndex(null);
+      return next;
+    });
+    setShowNewHere(false); // dismiss prompt once interacted
+  }, []);
 
   // On state selection: update active state and slide in the right panel!
   const handleSelectState = (n: number) => {
@@ -115,6 +131,8 @@ export const App: React.FC = () => {
     );
   }
 
+
+
   // Route: Sandbox or Story Mode — render the full chamber in both cases.
   // Story mode mounts a transparent overlay on top; the sim stays live.
   const sandboxJsx = (
@@ -167,6 +185,10 @@ export const App: React.FC = () => {
         slotA={slotA}
         slotB={slotB}
         onBackToLanding={handleBackToLanding}
+        isTourModeEnabled={isTourModeEnabled}
+        onToggleTourMode={handleToggleTourMode}
+        showNewHere={showNewHere}
+        onDismissNewHere={() => setShowNewHere(false)}
       />
 
       <RightPanel
@@ -184,6 +206,18 @@ export const App: React.FC = () => {
         diffStats={diffStats}
       />
 
+      {/* ── Global UI Tour Components ── */}
+      <StorySpotlight
+        activeTourStepIndex={activeTourStepIndex}
+        onSelectStepIndex={setActiveTourStepIndex}
+        onOpenRightPanel={() => setIsRightPanelOpen(true)}
+        highlightSelector={null}
+      />
+      <StoryHotspots
+        isVisible={isTourModeEnabled && activeTourStepIndex === null}
+        onSelectStepIndex={setActiveTourStepIndex}
+      />
+
       {/* Story mode overlay — mounts on top, pointer-events:none container */}
       {route === 'story-mode' && (
         <StoryModeOverlay
@@ -197,6 +231,7 @@ export const App: React.FC = () => {
           onExitToSandbox={handleExitStoryToSandbox}
           onExitToLanding={handleExitStoryToLanding}
           onOpenRightPanel={() => setIsRightPanelOpen(true)}
+          isTourActive={activeTourStepIndex !== null}
         />
       )}
     </div>
@@ -205,4 +240,46 @@ export const App: React.FC = () => {
   return sandboxJsx;
 };
 
-export default App;
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('React Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', color: '#F5EFDD', backgroundColor: '#1E232B', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h2 style={{ color: '#C2543B' }}>Something went wrong.</h2>
+          <p>The application encountered an unexpected error.</p>
+          <pre style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '4px', maxWidth: '80%', overflow: 'auto', textAlign: 'left' }}>
+            {this.state.error?.message}
+          </pre>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '1rem', padding: '8px 16px', background: '#38A89D', color: '#1E232B', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Reload Application
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}

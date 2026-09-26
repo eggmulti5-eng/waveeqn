@@ -5,7 +5,8 @@
  * It reads live sim state via props and injects a dialogue box + optional HUD +
  * spotlight guide over the canvas.
  *
- * The sandbox beneath remains fully interactive at all times.
+ * Scopes z-index and pointer-events so that ONLY ONE panel system
+ * (Story Dialogue OR Feature Tour Card) can ever be visible and receive input at a time.
  */
 import React, { useEffect, useRef, useState } from 'react';
 import './story.css';
@@ -30,6 +31,7 @@ interface StoryModeOverlayProps {
   onExitToSandbox: () => void;     // Skip to sandbox (no reset)
   onExitToLanding: () => void;     // Back to landing
   onOpenRightPanel?: () => void;   // Open right panel for inspector tour step
+  isTourActive?: boolean;
 }
 
 export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
@@ -43,6 +45,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   onExitToSandbox,
   onExitToLanding,
   onOpenRightPanel,
+  isTourActive = false,
 }) => {
   const storyControls = useStoryMode({
     currentL,
@@ -65,37 +68,57 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
     recordVisit,
   } = storyControls;
 
-  // ── UI Feature Tour state ────────────────────────────────────────────────
-  const [activeTourStepIndex, setActiveTourStepIndex] = useState<number | null>(null);
+  // isTourActive comes from App.tsx via props
 
   // ── Orbit detection ──────────────────────────────────────────────────────
   // Intercept pointer-move on the canvas to detect orbit (drag with left button)
   const hasDraggedRef = useRef(false);
   const pointerDownRef = useRef(false);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (state.hasOrbited) return;
 
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button === 0) pointerDownRef.current = true;
-    };
-    const onPointerMove = () => {
-      if (pointerDownRef.current && !hasDraggedRef.current) {
-        hasDraggedRef.current = true;
-        markOrbited();
+      if (e.button !== 0) return;
+      // Do not count clicks on interactive overlay panels
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest(
+          '.story-dialogue, .story-tour-card, .story-hotspot-pin, .story-challenge-hud-anchor, .topbar, .left-panel, .right-panel'
+        )
+      ) {
+        return;
       }
-    };
-    const onPointerUp = () => {
-      pointerDownRef.current = false;
+      pointerDownRef.current = true;
+      startPosRef.current = { x: e.clientX, y: e.clientY };
     };
 
-    window.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    const onPointerMove = (e: PointerEvent) => {
+      if (pointerDownRef.current && !hasDraggedRef.current && startPosRef.current) {
+        const dx = Math.abs(e.clientX - startPosRef.current.x);
+        const dy = Math.abs(e.clientY - startPosRef.current.y);
+        // Dragged > 3px on the 3D canvas confirms intentional orbit
+        if (dx > 3 || dy > 3) {
+          hasDraggedRef.current = true;
+          markOrbited();
+        }
+      }
+    };
+
+    const onPointerUp = () => {
+      pointerDownRef.current = false;
+      startPosRef.current = null;
+    };
+
+    // Use capturing phase so we intercept canvas interaction even if OrbitControls captures
+    window.addEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('pointermove', onPointerMove, true);
+    window.addEventListener('pointerup', onPointerUp, true);
     return () => {
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointerdown', onPointerDown, true);
+      window.removeEventListener('pointermove', onPointerMove, true);
+      window.removeEventListener('pointerup', onPointerUp, true);
     };
   }, [state.hasOrbited, markOrbited]);
 
@@ -109,24 +132,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   const isChallengeBeat = currentBeat?.id === 'challenge';
   const totalBeats = state.beats.length;
 
-  // Auto-advance when a non-challenge beat's action is completed
-  const prevBeatActionDoneRef = useRef(false);
-  useEffect(() => {
-    if (isChallengeBeat || currentBeat?.noAction) {
-      prevBeatActionDoneRef.current = false;
-      return;
-    }
-    if (isBeatActionDone && !prevBeatActionDoneRef.current && isLastLine) {
-      prevBeatActionDoneRef.current = true;
-      const t = setTimeout(() => advance(), 600);
-      return () => clearTimeout(t);
-    }
-    if (!isBeatActionDone) {
-      prevBeatActionDoneRef.current = false;
-    }
-  }, [isBeatActionDone, isLastLine, isChallengeBeat, currentBeat?.noAction, advance]);
-
-  // Challenge done auto-advance
+  // Challenge done auto-advance (only for Challenge beat)
   const challengeDoneRef = useRef(false);
   useEffect(() => {
     if (!isChallengeBeat) return;
@@ -153,31 +159,33 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
             wavefunctionData={wavefunctionData}
             activeN={activeN}
             onFreeExplore={onExitToSandbox}
+            onExitToLanding={onExitToLanding}
           />
         </div>
       </div>
     );
   }
 
+  // Hotspots are only shown between beats or after the mandatory action for the active beat is done
+  const canShowHotspots =
+    !isTourActive &&
+    !isReportBeat &&
+    (currentBeat?.noAction || isBeatActionDone);
+
   return (
     <div className="story-overlay" style={{ pointerEvents: 'none' }}>
-      {/* ── Feature Tour Spotlight Layer ── */}
-      <StorySpotlight
-        activeTourStepIndex={activeTourStepIndex}
-        onSelectStepIndex={setActiveTourStepIndex}
-        onOpenRightPanel={onOpenRightPanel}
-        highlightSelector={activeTourStepIndex === null ? currentBeat?.highlightSelector : null}
-      />
-
-      {/* ── Optional UI Hotspots (beacon pins over major sections) ── */}
-      <StoryHotspots
-        isVisible={activeTourStepIndex === null && !isReportBeat}
-        onSelectStepIndex={setActiveTourStepIndex}
-      />
-
       {/* ── Challenge HUD (top-right, above canvas) ── */}
-      {isChallengeBeat && (
-        <div className="story-challenge-hud-anchor" style={{ pointerEvents: 'auto' }}>
+      {/* ── Story Beat Highlight ── */}
+      {!isTourActive && (
+        <StorySpotlight
+          activeTourStepIndex={null}
+          onSelectStepIndex={() => {}}
+          highlightSelector={currentBeat?.highlightSelector}
+        />
+      )}
+
+      {isChallengeBeat && !isTourActive && (
+        <div className="story-challenge-hud-anchor" style={{ pointerEvents: 'auto', zIndex: 85 }}>
           <ChallengeHUD
             target={state.challengeTarget}
             currentE={currentE}
@@ -188,8 +196,17 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
         </div>
       )}
 
-      {/* ── Dialogue box (bottom of canvas) ── */}
-      <div className="story-dialogue-anchor" style={{ pointerEvents: 'auto' }}>
+      {/* ── Dialogue box (bottom of canvas) ──
+          CRITICAL: Explicitly hidden and disabled whenever a tour hotspot is open!
+          Restored seamlessly when the tour hotspot is closed. */}
+      <div
+        className="story-dialogue-anchor"
+        style={{
+          display: isTourActive ? 'none' : 'block',
+          pointerEvents: isTourActive ? 'none' : 'auto',
+          zIndex: 90,
+        }}
+      >
         <StoryDialogue
           beat={currentBeat}
           line={currentLine}
@@ -207,11 +224,34 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
           currentL={currentL}
           currentV={currentV}
           wellType={wellType}
-          isTourActive={activeTourStepIndex !== null}
-          onToggleTour={() =>
-            setActiveTourStepIndex((prev) => (prev === null ? 0 : null))
-          }
+          isTourActive={isTourActive}
         />
+      </div>
+      {/* ── Persistent Global Exit Control ── */}
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: '56px', 
+          right: '16px', 
+          zIndex: 2147483647, // Max possible z-index
+          pointerEvents: 'auto' 
+        }}
+      >
+        <button 
+          onClick={onExitToSandbox} 
+          className="story-button story-button-secondary"
+          style={{
+            backgroundColor: '#1E232B',
+            border: '1px solid #C2543B',
+            color: '#F5EFDD',
+            padding: '8px 12px',
+            fontSize: '11px',
+            letterSpacing: '1px',
+            textTransform: 'uppercase'
+          }}
+        >
+          {isTourActive ? 'Skip Tour' : 'Exit to Sandbox'}
+        </button>
       </div>
     </div>
   );

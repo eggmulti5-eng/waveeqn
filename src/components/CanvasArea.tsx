@@ -36,6 +36,10 @@ interface CanvasAreaProps {
   slotA?: SavedSlot | null;
   slotB?: SavedSlot | null;
   onBackToLanding?: () => void;
+  isTourModeEnabled?: boolean;
+  onToggleTourMode?: () => void;
+  showNewHere?: boolean;
+  onDismissNewHere?: () => void;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({
@@ -64,6 +68,10 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   slotA = null,
   slotB = null,
   onBackToLanding,
+  isTourModeEnabled = false,
+  onToggleTourMode,
+  showNewHere = false,
+  onDismissNewHere,
 }) => {
   return (
     <main className="canvas-area">
@@ -91,6 +99,10 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         isRightPanelOpen={isRightPanelOpen}
         onToggleRightPanel={onToggleRightPanel}
         onBackToLanding={onBackToLanding}
+        isTourModeEnabled={isTourModeEnabled}
+        onToggleTourMode={onToggleTourMode}
+        showNewHere={showNewHere}
+        onDismissNewHere={onDismissNewHere}
       />
 
       {/* Bottom-Center Floating Toolbar */}

@@ -9,6 +9,7 @@ interface ReportScreenProps {
   wavefunctionData: WavefunctionData;
   activeN: number;
   onFreeExplore: () => void;
+  onExitToLanding?: () => void;
 }
 
 // Export wavefunction curve as PNG via an off-screen canvas
@@ -93,6 +94,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
   wavefunctionData,
   activeN,
   onFreeExplore,
+  onExitToLanding,
 }) => {
   const sortedNs = Array.from(visitedNs).sort((a, b) => a - b);
   const wellTypesArr = Array.from(visitedWellTypes);
@@ -165,14 +167,29 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
           <span className="story-download-note">for your lab report</span>
         </button>
 
-        {/* Free explore */}
-        <button
-          type="button"
-          className="story-free-explore-btn"
-          onClick={onFreeExplore}
-        >
-          ⟨ ⟩ CONTINUE TO FREE EXPLORE
-        </button>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+          {onExitToLanding && (
+            <button
+              type="button"
+              className="story-free-explore-btn"
+              onClick={onExitToLanding}
+              title="Return to main landing page"
+              style={{ flex: 1 }}
+            >
+              ⌂ MENU
+            </button>
+          )}
+          <button
+            type="button"
+            className="story-free-explore-btn"
+            onClick={onFreeExplore}
+            title="Continue into Sandbox mode"
+            style={{ flex: 2 }}
+          >
+            ⟨ ⟩ FREE EXPLORE
+          </button>
+        </div>
 
         <p className="story-report-preserve-note">
           Current simulation state is preserved — no parameters were reset.

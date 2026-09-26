@@ -140,7 +140,6 @@ function buildBeats(target: number, hint: string, tol: number): Beat[] {
     },
     {
       id: 'escalation',
-      highlightSelector: '[data-tour="well-toggle"]',
       lines: [
         {
           text: 'ACTION: In the left panel, toggle the model to FINITE, then drag the Barrier Height (V) slider to lower the wall.',

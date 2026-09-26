@@ -30,6 +30,23 @@ interface StoryDialogueProps {
 // Typewriter speed (ms per character)
 const TYPEWRITER_SPEED = 18;
 
+function getBeatActionPrompt(beatId: string): string {
+  switch (beatId) {
+    case 'orientation':
+      return 'Orbit chamber (drag canvas)';
+    case 'interaction':
+      return 'Drag Well Width (L) slider';
+    case 'feedback':
+      return 'Toggle |ψ|² in bottom toolbar';
+    case 'escalation':
+      return 'Switch to FINITE & lower V';
+    case 'challenge':
+      return 'Match target energy in HUD';
+    default:
+      return 'Perform action above';
+  }
+}
+
 export const StoryDialogue: React.FC<StoryDialogueProps> = ({
   beat,
   line,
@@ -59,11 +76,12 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
   const indexRef = useRef(0);
 
   // ── Reactive Quips System ────────────────────────────────────────────────
-  // Fires when user explores extreme parameters or lingers on an action
   const prevLRef = useRef(currentL);
   const prevVRef = useRef(currentV);
 
   useEffect(() => {
+    if (isTourActive) return;
+
     // Extreme width reactions
     if (currentL <= 1.15 && prevLRef.current > 1.15) {
       triggerQuip('“Extreme confinement! At L ≈ 1.0, kinetic pressure maxes out—watch that energy spike!”', 4000);
@@ -77,11 +95,11 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
       triggerQuip('“Thin barrier! Watch those exponential tails seep deep into the wall—peak tunnelling!”', 4000);
     }
     prevVRef.current = currentV;
-  }, [currentL, currentV, wellType]);
+  }, [currentL, currentV, wellType, isTourActive]);
 
   // Idle encouraging quip if waiting for user action > 14s
   useEffect(() => {
-    if (!isLastLine || beat.noAction || isBeatActionDone || isTyping) {
+    if (isTourActive || !isLastLine || beat.noAction || isBeatActionDone || isTyping) {
       return;
     }
     const idleTimer = setTimeout(() => {
@@ -89,7 +107,7 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
     }, 14000);
 
     return () => clearTimeout(idleTimer);
-  }, [isLastLine, beat.noAction, isBeatActionDone, isTyping, beatIndex]);
+  }, [isLastLine, beat.noAction, isBeatActionDone, isTyping, beatIndex, isTourActive]);
 
   const triggerQuip = (text: string, durationMs = 4000) => {
     if (quipTimerRef.current) clearTimeout(quipTimerRef.current);
@@ -138,22 +156,26 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
     };
   }, [displayText]);
 
+  // Can the user advance?
+  // Beats with mandatory action require that the action has been performed (or is complete).
+  const canAdvance = !isTyping && (beat.noAction || isBeatActionDone);
+
   // Click to finish typing immediately or advance
   const handleRevealOrAdvance = useCallback(() => {
     if (isTyping) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setShownText(displayText);
       setIsTyping(false);
-    } else {
-      const canAdvance = beat.noAction || isBeatActionDone || !isLastLine;
-      if (canAdvance) onAdvance();
+    } else if (canAdvance) {
+      onAdvance();
     }
-  }, [isTyping, displayText, beat.noAction, isBeatActionDone, isLastLine, onAdvance]);
+  }, [isTyping, displayText, canAdvance, onAdvance]);
 
-  // Keyboard: Space / Enter to advance
+  // Keyboard: Space / Enter to advance (ONLY when tour is NOT active)
   useEffect(() => {
+    if (isTourActive) return;
+
     const onKey = (e: KeyboardEvent) => {
-      // Don't intercept if an input is focused
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
 
       if (e.key === ' ' || e.key === 'Enter') {
@@ -163,10 +185,7 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [handleRevealOrAdvance]);
-
-  // Determine if the CONTINUE button is active (clickable)
-  const canAdvance = !isTyping && (beat.noAction || isBeatActionDone || !isLastLine);
+  }, [handleRevealOrAdvance, isTourActive]);
 
   // Beat name label
   const beatLabel = beat.id.replace(/_/g, ' ').toUpperCase();
@@ -229,7 +248,6 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
         <div className="story-avatar" aria-hidden="true">
           <div className="story-avatar-inner">
             <AxiomPortrait mood={axiomMood} isTyping={isTyping} size={44} />
-            <div className="story-avatar-pulse" />
           </div>
           <div className="story-avatar-name">AXIOM</div>
         </div>
@@ -253,34 +271,44 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
             </div>
 
             {/* Action waiting indicator */}
-            {isLastLine && !beat.noAction && !isBeatActionDone && !isTyping && (
+            {!beat.noAction && !isBeatActionDone && !isTyping && (
               <div className="story-waiting-indicator">
                 <span className="story-waiting-dot" />
-                <span>Waiting for action…</span>
+                <span>{getBeatActionPrompt(beat.id)}</span>
+              </div>
+            )}
+
+            {/* Action completed indicator */}
+            {!beat.noAction && isBeatActionDone && !isTyping && (
+              <div className="story-action-done-indicator">
+                <span className="story-done-check">✓</span>
+                <span>Action complete</span>
               </div>
             )}
 
             {/* Continue button */}
             <button
               type="button"
-              className={`story-continue-btn ${canAdvance ? 'ready' : ''}`}
+              className={`story-continue-btn ${canAdvance ? 'ready' : isTyping ? 'reveal' : 'waiting'}`}
               onClick={handleRevealOrAdvance}
-              disabled={false}
+              disabled={!isTyping && !canAdvance}
               title={
                 isTyping
                   ? 'Click to reveal text instantly'
                   : canAdvance
                     ? isLastBeat && isLastLine
-                      ? 'Finish'
-                      : 'Continue'
-                    : 'Complete the action above first'
+                      ? 'Finish story mode'
+                      : 'Continue to next line / beat'
+                    : getBeatActionPrompt(beat.id)
               }
             >
               {isTyping
                 ? '▸ REVEAL'
                 : isLastBeat && isLastLine
                   ? '✓ FINISH'
-                  : '▸ CONTINUE'}
+                  : canAdvance
+                    ? '▸ CONTINUE'
+                    : 'WAITING…'}
             </button>
           </div>
         </div>

@@ -11,6 +11,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   return (
     <div className="landing-page">
+      {/* Ambient floating background elements */}
+      <div className="landing-ambient-bg" aria-hidden="true">
+        {/* Floating equations */}
+        <div className="ambient-element eq-1">λ = h/p</div>
+        <div className="ambient-element eq-2">ΔxΔp ≥ ℏ/2</div>
+        <div className="ambient-element eq-3">∫|ψ|²dx = 1</div>
+        <div className="ambient-element eq-4">E_n = n²π²ℏ²/2mL²</div>
+        
+        {/* Schrödinger's Cat silhouette */}
+        <div className="ambient-element ambient-cat">
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M 35 90 C 35 60, 40 50, 40 40 C 25 40, 20 30, 30 20 L 35 10 L 45 20 L 60 10 C 60 25, 55 35, 60 45 C 70 60, 75 75, 75 90 C 85 90, 95 90, 95 95 C 95 100, 80 100, 75 100 L 35 100 Z"/>
+          </svg>
+          <span className="cat-qm">?</span>
+        </div>
+
+        {/* Drifting particles */}
+        <div className="ambient-particle p1" />
+        <div className="ambient-particle p2" />
+        <div className="ambient-particle p3" />
+        <div className="ambient-particle p4" />
+        <div className="ambient-particle p5" />
+        <div className="ambient-particle p6" />
+      </div>
+
       {/* Subtle background grid matching canvas */}
       <div className="landing-grid-bg" />
 

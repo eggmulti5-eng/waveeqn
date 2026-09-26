@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AxiomPortrait } from './AxiomPortrait';
-import { ChevronLeft, ChevronRight, X, Sparkles, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Sparkles } from 'lucide-react';
 
 export interface TourStep {
   id: string;
@@ -131,7 +131,6 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
 }) => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [activeStep, setActiveStep] = useState<TourStep | null>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const isTourActive = activeTourStepIndex !== null;
 
@@ -237,8 +236,8 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
   // Determine optimal card position (above or below or alongside target)
   const isBottomHalf = top > window.innerHeight * 0.55;
   const cardTop = isBottomHalf
-    ? Math.max(20, top - 210)
-    : Math.min(window.innerHeight - 240, top + height + 16);
+    ? Math.max(20, top - 220)
+    : Math.min(window.innerHeight - 250, top + height + 16);
   const cardLeft = Math.min(
     Math.max(20, left + width / 2 - 180),
     window.innerWidth - 380,
@@ -250,8 +249,14 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: isTourActive ? 920 : 80,
-        pointerEvents: 'none',
+        zIndex: isTourActive ? 1000 : 80,
+        pointerEvents: isTourActive ? 'auto' : 'none',
+      }}
+      onClick={(e) => {
+        // Clicking backdrop dim closes feature tour
+        if (isTourActive && e.target === e.currentTarget) {
+          handleClose();
+        }
       }}
       aria-live="polite"
     >
@@ -289,6 +294,7 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
             left: cardLeft,
             width: 360,
             pointerEvents: 'auto',
+            zIndex: 1010,
           }}
           role="dialog"
           aria-label="UI Feature Guide"
@@ -305,8 +311,8 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
               type="button"
               className="story-tour-close-btn"
               onClick={handleClose}
-              title="Close feature tour (Esc)"
-              aria-label="Close feature tour"
+              title="Close feature tour and return to story (Esc)"
+              aria-label="Close feature tour and return to story"
             >
               <X size={14} />
             </button>
@@ -350,6 +356,14 @@ export const StorySpotlight: React.FC<StorySpotlightProps> = ({
             </div>
 
             <div className="story-tour-nav-btns">
+              <button
+                type="button"
+                className="story-tour-nav-btn exit-tour-btn"
+                onClick={handleClose}
+                title="Return to story mode"
+              >
+                <span>✕ CLOSE</span>
+              </button>
               <button
                 type="button"
                 className="story-tour-nav-btn"

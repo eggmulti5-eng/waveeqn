@@ -1308,6 +1308,110 @@
     linear-gradient(to bottom, rgba(58, 51, 42, 0.06) 1px, transparent 1px);
 }
 
+/* Ambient Animated Background */
+.landing-ambient-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0; /* Behind grid and content */
+}
+
+.ambient-element {
+  position: absolute;
+  color: var(--ink-muted);
+  opacity: 0.15;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ambient-element.eq-1 {
+  top: 15%;
+  left: 10%;
+  animation: driftFloat 25s ease-in-out infinite alternate;
+}
+
+.ambient-element.eq-2 {
+  bottom: 20%;
+  right: 15%;
+  font-size: 20px;
+  animation: driftFloat 30s ease-in-out infinite alternate-reverse;
+}
+
+.ambient-element.eq-3 {
+  top: 40%;
+  right: 8%;
+  transform-origin: center;
+  animation: driftFloatRotate 35s ease-in-out infinite alternate;
+}
+
+.ambient-element.eq-4 {
+  bottom: 12%;
+  left: 18%;
+  font-size: 22px;
+  animation: driftFloat 28s ease-in-out infinite alternate;
+}
+
+.ambient-cat {
+  top: 25%;
+  right: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  opacity: 0.18;
+  color: var(--accent);
+  animation: driftFloat 40s linear infinite alternate;
+}
+
+.cat-qm {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 18px;
+  font-weight: bold;
+  animation: catQuestionFade 6s ease-in-out infinite alternate;
+}
+
+.ambient-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  opacity: 0.18;
+}
+
+.p1 { top: 30%; left: 20%; animation: particleDrift 20s linear infinite alternate; }
+.p2 { top: 60%; right: 30%; width: 6px; height: 6px; animation: particleDrift 25s linear infinite alternate-reverse; }
+.p3 { bottom: 30%; left: 40%; animation: particleDrift 22s linear infinite alternate; }
+.p4 { top: 15%; right: 40%; width: 3px; height: 3px; animation: particleDrift 18s linear infinite alternate-reverse; }
+.p5 { bottom: 15%; right: 10%; animation: particleDrift 30s linear infinite alternate; }
+.p6 { top: 50%; left: 5%; width: 5px; height: 5px; animation: particleDrift 26s linear infinite alternate-reverse; }
+
+@keyframes driftFloat {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, -30px); }
+}
+
+@keyframes driftFloatRotate {
+  0% { transform: translate(0, 0) rotate(-5deg); }
+  100% { transform: translate(-30px, 40px) rotate(5deg); }
+}
+
+@keyframes catQuestionFade {
+  0%, 30% { opacity: 0; transform: translateY(4px); }
+  70%, 100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes particleDrift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(80px, 60px); }
+}
+
 .landing-content {
   position: relative;
   z-index: 1;
@@ -1481,9 +1585,9 @@
 /* ---- Entry Choices ---- */
 .landing-choices {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
 }
 
 .landing-choice-btn {
@@ -1491,9 +1595,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 24px 20px 20px 20px;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 32px 24px 28px 24px;
+  border-radius: 12px;
   border: 1px solid var(--border-panel);
   background-color: var(--bg-panel);
   cursor: pointer;
@@ -1503,8 +1607,8 @@
 
 .landing-choice-btn:hover {
   border-color: var(--accent);
-  box-shadow: 0 6px 20px rgba(139, 74, 59, 0.14);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(139, 74, 59, 0.16);
+  transform: translateY(-3px);
 }
 
 .landing-choice-btn:active {
@@ -1522,7 +1626,7 @@
 }
 
 .choice-icon {
-  font-size: 26px;
+  font-size: 32px;
   line-height: 1;
   color: var(--accent);
 }
@@ -1532,7 +1636,7 @@
 }
 
 .choice-label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1540,7 +1644,7 @@
 }
 
 .choice-desc {
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--ink-muted);
   text-align: center;
   line-height: 1.5;

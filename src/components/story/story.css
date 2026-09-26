@@ -202,15 +202,20 @@
 
 .story-avatar-inner {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--input-bg);
+  border: 1.5px solid var(--border-panel);
+  border-radius: 4px;
 }
 
 .axiom-pixel-portrait {
-  animation: axiom-bob 2.8s ease-in-out infinite;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: axiom-bob 2.4s steps(2, jump-none) infinite;
   transform-origin: center bottom;
 }
 
@@ -220,7 +225,7 @@
 }
 
 .axiom-pixel-portrait.typing {
-  animation: axiom-typing-bob 0.8s ease-in-out infinite;
+  animation: axiom-typing-bob 0.5s steps(2, jump-none) infinite;
 }
 
 @keyframes axiom-typing-bob {
@@ -229,17 +234,7 @@
 }
 
 .story-avatar-pulse {
-  position: absolute;
-  inset: -3px;
-  border-radius: 8px;
-  border: 1.5px solid var(--accent);
-  opacity: 0.35;
-  animation: story-avatar-ring 2.4s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes story-avatar-ring {
-  0%, 100% { transform: scale(1);   opacity: 0.35; }
-  50%       { transform: scale(1.06); opacity: 0.12; }
+  display: none;
 }
 
 .story-avatar-name {
@@ -316,8 +311,31 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--ink-muted);
+  background-color: var(--accent);
   animation: story-dot-pulse 1.2s ease-in-out infinite;
+}
+
+.story-action-done-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #15803d;
+  letter-spacing: 0.04em;
+  flex: 1;
+}
+.story-done-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: #15803d;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
 }
 
 .story-continue-btn {
@@ -334,14 +352,29 @@
   transition: all 0.15s ease;
   white-space: nowrap;
 }
+.story-continue-btn.reveal {
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background-color: rgba(139, 74, 59, 0.08);
+  cursor: pointer;
+}
+.story-continue-btn.reveal:hover {
+  background-color: rgba(139, 74, 59, 0.14);
+}
 .story-continue-btn.ready {
   border-color: var(--accent);
   background-color: var(--accent);
   color: var(--accent-active-text);
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(139, 74, 59, 0.3);
 }
 .story-continue-btn.ready:hover {
   filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.story-continue-btn.waiting {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -700,14 +733,14 @@
 
 .story-tour-avatar {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(139, 74, 59, 0.08);
-  border: 1px solid var(--border-accent);
-  border-radius: 6px;
+  background-color: var(--input-bg);
+  border: 1.5px solid var(--border-panel);
+  border-radius: 4px;
 }
 
 .story-tour-text-col {
@@ -795,6 +828,17 @@
 .story-tour-nav-btn:hover {
   background-color: var(--surface-hover);
   color: var(--ink);
+}
+
+.story-tour-nav-btn.exit-tour-btn {
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background-color: rgba(139, 74, 59, 0.08);
+}
+
+.story-tour-nav-btn.exit-tour-btn:hover {
+  background-color: rgba(139, 74, 59, 0.16);
+  color: var(--accent);
 }
 
 .story-tour-nav-btn.primary {

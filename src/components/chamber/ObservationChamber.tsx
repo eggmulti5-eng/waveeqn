@@ -1,6 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { XR, createXRStore, XROrigin } from '@react-three/xr';
+
+const xrStore = createXRStore({ emulate: false });
 import { GroundPlatform } from './GroundPlatform';
 import { PotentialWellMesh } from './PotentialWellMesh';
 import { WavefunctionRibbon } from './WavefunctionRibbon';
@@ -30,13 +33,14 @@ interface ObservationChamberProps {
   isCompareActive?: boolean;
   slotA?: SavedSlot | null;
   slotB?: SavedSlot | null;
+  zoomPct?: number;
 }
 
-// Inner helper component to access camera and OrbitControls inside Canvas context
 const ChamberControls: React.FC<{
   cameraResetTrigger?: number;
   onZoomChange?: (zoomPct: number) => void;
-}> = ({ cameraResetTrigger, onZoomChange }) => {
+  zoomPct?: number;
+}> = ({ cameraResetTrigger, onZoomChange, zoomPct }) => {
   const controlsRef = useRef<any>(null);
   const defaultDist = 5.81;
 
@@ -46,6 +50,32 @@ const ChamberControls: React.FC<{
       onZoomChange?.(100);
     }
   }, [cameraResetTrigger, onZoomChange]);
+
+  // Synchronize external zoom button clicks to the OrbitControls camera distance
+  useEffect(() => {
+    if (!controlsRef.current || zoomPct === undefined) return;
+    
+    const targetDist = (defaultDist * 100) / zoomPct;
+    
+    const target = controlsRef.current.target;
+    const position = controlsRef.current.object.position;
+    
+    const dx = position.x - target.x;
+    const dy = position.y - target.y;
+    const dz = position.z - target.z;
+    const currentDist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    
+    // Only apply if the difference is significant (prevents fight with user scroll)
+    if (Math.abs(targetDist - currentDist) > 0.05) {
+      const scale = targetDist / currentDist;
+      position.set(
+        target.x + dx * scale,
+        target.y + dy * scale,
+        target.z + dz * scale
+      );
+      controlsRef.current.update();
+    }
+  }, [zoomPct]);
 
   useEffect(() => {
     const controls = controlsRef.current;
@@ -106,6 +136,7 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
   isCompareActive = false,
   slotA = null,
   slotB = null,
+  zoomPct,
 }) => {
   // Determine if dual comparative overlay is active
   const isDualCompare = Boolean(isCompareActive && slotA && slotB);
@@ -116,16 +147,54 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
   const primaryV = isDualCompare && slotA ? slotA.V : V;
   const primaryWf = isDualCompare && slotA ? slotA.wavefunctionData : wavefunctionData;
 
+  const [vrSupported, setVrSupported] = React.useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'xr' in navigator && (navigator as any).xr) {
+      (navigator as any).xr.isSessionSupported('immersive-vr').then((supported: boolean) => {
+        setVrSupported(supported);
+      });
+    }
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {vrSupported && (
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', zIndex: 9999 }}>
+          <button 
+            onClick={() => {
+              xrStore.enterVR().catch(console.error);
+            }}
+            style={{ 
+              padding: '12px 24px', 
+              background: 'var(--accent)', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '4px', 
+              cursor: 'pointer', 
+              fontFamily: 'var(--font-family)', 
+              fontWeight: 'bold',
+              fontSize: '14px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+            }}
+          >
+            Enter VR
+          </button>
+        </div>
+      )}
       <Canvas
         gl={{ antialias: true, alpha: true }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
-        <ChamberControls
-          cameraResetTrigger={cameraResetTrigger}
-          onZoomChange={onZoomChange}
-        />
+        <XR store={xrStore}>
+          <XROrigin position={[0, 1.2, 4]} />
+          <ChamberControls
+            cameraResetTrigger={cameraResetTrigger}
+            onZoomChange={onZoomChange}
+            zoomPct={zoomPct}
+          />
 
         {/* Warm Ambient & Directional Architectural Lighting */}
         <ambientLight intensity={0.85} color="#F5EFDD" />
@@ -181,6 +250,7 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
             mode={displayMode}
           />
         )}
+        </XR>
       </Canvas>
     </div>
   );

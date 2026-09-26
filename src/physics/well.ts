@@ -201,6 +201,8 @@ export interface FiniteWellOptions {
  * @param options Optional configuration (N=500, hbar=1)
  * @returns FiniteWellResult
  */
+const diagCache = new Map<string, { ev: EigenvalueDecomposition, sortedStates: { E: number; colIndex: number }[], x: number[], dx: number }>();
+
 export function finiteWell(
   L: number,
   m: number,
@@ -218,51 +220,66 @@ export function finiteWell(
   const N = options.N ?? 500;
   const hbar = options.hbar ?? DEFAULT_HBAR;
 
-  // Domain: [-L, 2L]
-  const xMin = -L;
-  const xMax = 2 * L;
-  const dx = (xMax - xMin) / (N - 1);
+  const cacheKey = `${L.toFixed(4)}|${m.toFixed(4)}|${V.toFixed(4)}|${N}|${hbar}`;
+  let cached = diagCache.get(cacheKey);
 
-  // Kinetic term stencil coefficient: ħ² / (2 * m * dx²)
-  const k = (hbar * hbar) / (2 * m * dx * dx);
+  if (!cached) {
+    // Domain: [-L, 2L]
+    const xMin = -L;
+    const xMax = 2 * L;
+    const dx = (xMax - xMin) / (N - 1);
 
-  // Build tridiagonal Hamiltonian matrix
-  const H = new Matrix(N, N);
-  const x = new Array<number>(N);
+    // Kinetic term stencil coefficient: ħ² / (2 * m * dx²)
+    const k = (hbar * hbar) / (2 * m * dx * dx);
 
-  for (let i = 0; i < N; i++) {
-    const xi = xMin + i * dx;
-    x[i] = xi;
+    // Build tridiagonal Hamiltonian matrix
+    const H = new Matrix(N, N);
+    const x = new Array<number>(N);
 
-    // Potential: 0 inside [0, L], V outside
-    const isInside = xi >= 0 && xi <= L;
-    const pot = isInside ? 0 : V;
+    for (let i = 0; i < N; i++) {
+      const xi = xMin + i * dx;
+      x[i] = xi;
 
-    H.set(i, i, 2 * k + pot);
-    if (i > 0) {
-      H.set(i, i - 1, -k);
+      // Potential: 0 inside [0, L], V outside
+      const isInside = xi >= 0 && xi <= L;
+      const pot = isInside ? 0 : V;
+
+      H.set(i, i, 2 * k + pot);
+      if (i > 0) {
+        H.set(i, i - 1, -k);
+      }
+      if (i < N - 1) {
+        H.set(i, i + 1, -k);
+      }
     }
-    if (i < N - 1) {
-      H.set(i, i + 1, -k);
+
+    // Diagonalize Hamiltonian
+    const ev = new EigenvalueDecomposition(H);
+    const eigvals = ev.realEigenvalues;
+
+    // Sort eigenvalue/eigenvector pairs by ascending energy
+    const sortedStates: { E: number; colIndex: number }[] = [];
+    for (let i = 0; i < N; i++) {
+      sortedStates.push({ E: eigvals[i], colIndex: i });
     }
+    sortedStates.sort((a, b) => a.E - b.E);
+
+    cached = { ev, sortedStates, x, dx };
+
+    if (diagCache.size > 20) {
+      const firstKey = diagCache.keys().next().value;
+      if (firstKey !== undefined) diagCache.delete(firstKey);
+    }
+    diagCache.set(cacheKey, cached);
   }
 
-  // Diagonalize Hamiltonian
-  const ev = new EigenvalueDecomposition(H);
-  const eigvals = ev.realEigenvalues;
+  const { ev, sortedStates, x, dx } = cached;
 
-  // Sort eigenvalue/eigenvector pairs by ascending energy
-  const states: { E: number; colIndex: number }[] = [];
-  for (let i = 0; i < N; i++) {
-    states.push({ E: eigvals[i], colIndex: i });
-  }
-  states.sort((a, b) => a.E - b.E);
-
-  if (n > states.length) {
-    throw new Error(`Requested state n=${n} exceeds matrix rank ${states.length}`);
+  if (n > sortedStates.length) {
+    throw new Error(`Requested state n=${n} exceeds matrix rank ${sortedStates.length}`);
   }
 
-  const chosenState = states[n - 1];
+  const chosenState = sortedStates[n - 1];
   const E = chosenState.E;
   const rawPsi = ev.eigenvectorMatrix.getColumn(chosenState.colIndex);
 

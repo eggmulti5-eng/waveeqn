@@ -92,6 +92,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         isCompareActive={isCompareActive}
         slotA={slotA}
         slotB={slotB}
+        zoomPct={zoomPct}
       />
 
       {/* Top Bar Over Canvas with home button */}

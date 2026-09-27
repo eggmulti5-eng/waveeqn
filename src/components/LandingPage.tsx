@@ -3,11 +3,13 @@ import React from 'react';
 interface LandingPageProps {
   onEnterSandbox: () => void;
   onEnterStoryMode: () => void;
+  onEnterChallengeMode: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   onEnterSandbox,
   onEnterStoryMode,
+  onEnterChallengeMode,
 }) => {
   return (
     <div className="landing-page">
@@ -144,6 +146,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <span className="choice-icon">▸</span>
             <span className="choice-label">STORY MODE</span>
             <span className="choice-desc">Guided interactive quantum lab tour</span>
+          </button>
+
+          <button
+            type="button"
+            className="landing-choice-btn landing-choice-secondary"
+            onClick={onEnterChallengeMode}
+          >
+            <span className="choice-icon">★</span>
+            <span className="choice-label">CHALLENGE MODE</span>
+            <span className="choice-desc">Test your quantum intuition</span>
           </button>
         </div>
 

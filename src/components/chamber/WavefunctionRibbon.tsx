@@ -110,7 +110,7 @@ export const WavefunctionRibbon: React.FC<WavefunctionRibbonProps> = ({
   return (
     <group ref={ribbonGroupRef} renderOrder={1}>
       {/* Extruded ribbon mesh */}
-      <mesh geometry={ribbonGeometry}>
+      <mesh geometry={ribbonGeometry} frustumCulled={false}>
         <meshStandardMaterial
           ref={materialRef}
           color={stateColor}
@@ -136,7 +136,7 @@ export const WavefunctionRibbon: React.FC<WavefunctionRibbonProps> = ({
       />
 
       {/* Translucent vertical curtain */}
-      <mesh geometry={curtainGeometry}>
+      <mesh geometry={curtainGeometry} frustumCulled={false}>
         <meshStandardMaterial
           color={stateColor}
           transparent

@@ -162,8 +162,18 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
       {vrSupported && (
         <div style={{ position: 'absolute', bottom: '20px', left: '20px', zIndex: 9999 }}>
           <button 
+            id="enter-vr-button"
             onClick={() => {
-              xrStore.enterVR().catch(console.error);
+              console.log('[WebXR] ENTER VR button clicked. Attempting to start session...');
+              try {
+                const result = xrStore.enterVR();
+                console.log('[WebXR] enterVR() returned:', result);
+                if (result && typeof result.catch === 'function') {
+                  result.catch((err: any) => console.error('[WebXR] Promise rejected:', err));
+                }
+              } catch (err) {
+                console.error('[WebXR] Synchronous error during enterVR():', err);
+              }
             }}
             style={{ 
               padding: '12px 24px', 

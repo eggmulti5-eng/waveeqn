@@ -88,16 +88,16 @@ interface CachedSolve {
 const CACHE_MAX = 128;
 const solverCache = new Map<string, CachedSolve>();
 
-function makeCacheKey(wellType: WellType, L: number, m: number, V: number, n: number): string {
-  return `${wellType}|${L.toFixed(4)}|${m.toFixed(4)}|${V.toFixed(4)}|${n}`;
+function makeCacheKey(wellType: WellType, L: number, m: number, V: number, n: number, isLiveDrag: boolean): string {
+  return `${wellType}|${L.toFixed(4)}|${m.toFixed(4)}|${V.toFixed(4)}|${n}${isLiveDrag ? '|live' : ''}`;
 }
 
-function cachedSolve(wellType: WellType, L: number, m: number, V: number, activeN: number): CachedSolve {
-  const key = makeCacheKey(wellType, L, m, V, activeN);
+function cachedSolve(wellType: WellType, L: number, m: number, V: number, activeN: number, isLiveDrag: boolean = false): CachedSolve {
+  const key = makeCacheKey(wellType, L, m, V, activeN, isLiveDrag);
   const hit = solverCache.get(key);
   if (hit) return hit;
 
-  const result = solveFresh(wellType, L, m, V, activeN);
+  const result = solveFresh(wellType, L, m, V, activeN, isLiveDrag);
 
   // Evict oldest if cache is full
   if (solverCache.size >= CACHE_MAX) {
@@ -108,7 +108,7 @@ function cachedSolve(wellType: WellType, L: number, m: number, V: number, active
   return result;
 }
 
-function solveFresh(wellType: WellType, dL: number, dM: number, dV: number, activeN: number): CachedSolve {
+function solveFresh(wellType: WellType, dL: number, dM: number, dV: number, activeN: number, isLiveDrag: boolean): CachedSolve {
   const computedStates: StateItem[] = [];
   let activeWf: WavefunctionData;
 
@@ -130,7 +130,11 @@ function solveFresh(wellType: WellType, dL: number, dM: number, dV: number, acti
 
     // Sample active state wavefunction
     const { psi, E } = infiniteWell(dL, dM, activeN, DEFAULT_HBAR);
-    const sampleCount = 180;
+    // Guarantee points land exactly on the antinodes (peaks):
+    // psi = sin(n * pi * x / L). Peaks are at x = L * (k + 0.5) / n.
+    // For x_i = i * L / (sampleCount - 1) to hit perfectly, (sampleCount - 1) must be a multiple of 2n.
+    const m = Math.max(10, Math.ceil(90 / activeN)); 
+    const sampleCount = 2 * m * activeN + 1; // e.g. for n=1: 181, n=2: 181, n=8: 193
     const x3D: number[] = [];
     const psiArr: number[] = [];
     const halfL = dL / 2;
@@ -156,12 +160,16 @@ function solveFresh(wellType: WellType, dL: number, dM: number, dV: number, acti
       E,
     };
   } else {
-    // Numerical finite well using finite-difference Hamiltonian (N=300 for snappy 5ms execution)
-    const sampleN = 300;
-    let activeResult = finiteWell(dL, dM, dV, activeN, { N: sampleN, hbar: DEFAULT_HBAR });
+    // Numerical finite well using finite-difference Hamiltonian
+    // Domain is [-3L, 4L] -> length is 7L.
+    // (N - 1) must be a multiple of 7 to hit boundaries exactly.
+    // N=701 (K=100) is used for exact committed solves.
+    // N=141 (K=20) is used for buttery-smooth live drags (O(N^3) scaling means 141 is ~125x faster than 701!).
+    const globalSampleN = isLiveDrag ? 141 : 701;
+    let activeResult = finiteWell(dL, dM, dV, activeN, { N: globalSampleN, hbar: DEFAULT_HBAR });
 
     for (let n = 1; n <= 8; n++) {
-      const res = finiteWell(dL, dM, dV, n, { N: sampleN, hbar: DEFAULT_HBAR });
+      const res = finiteWell(dL, dM, dV, n, { N: globalSampleN, hbar: DEFAULT_HBAR });
       const meta = STATE_DESCRIPTIONS[n];
       const isBound = res.E < dV;
       const nodes = nodeCount(res.psi);
@@ -360,7 +368,7 @@ export function useQuantumState() {
     dragTimerRef.current = setTimeout(() => {
       setIsDragging(false);
       setCommittedParams({ wellType, L, m, V });
-    }, 120); // 120ms after last change = "released"
+    }, wellType === 'finite' ? 350 : 120); // Longer debounce for expensive finite well
 
     return () => {
       if (dragTimerRef.current) clearTimeout(dragTimerRef.current);
@@ -369,7 +377,7 @@ export function useQuantumState() {
 
   // Committed solve: exact physics for the settled parameters
   const committedSolve = useMemo(() => {
-    return cachedSolve(committedParams.wellType, committedParams.L, committedParams.m, committedParams.V, activeN);
+    return cachedSolve(committedParams.wellType, committedParams.L, committedParams.m, committedParams.V, activeN, false);
   }, [committedParams, activeN]);
 
   // During dragging: compute a fast solve at current live params for interpolation target
@@ -377,10 +385,11 @@ export function useQuantumState() {
     if (!isDragging) return null;
     // For infinite wells, analytical solution is instant — no performance concern
     if (wellType === 'infinite') {
-      return cachedSolve(wellType, L, m, V, activeN);
+      return cachedSolve(wellType, L, m, V, activeN, true);
     }
-    // For finite wells, use the cache (hits are free, misses are ~5ms with N=300)
-    return cachedSolve(wellType, L, m, V, activeN);
+    // For finite wells, use the extremely fast N=141 proxy to provide continuous 
+    // visual and energetic feedback during m/V drags without blocking the main thread!
+    return cachedSolve(wellType, L, m, V, activeN, true);
   }, [isDragging, wellType, L, m, V, activeN]);
 
   // Compose the final output: use interpolation during drag, exact solve when settled

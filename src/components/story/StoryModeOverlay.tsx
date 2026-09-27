@@ -12,7 +12,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import './story.css';
 import { useStoryMode } from './useStoryMode';
 import { StoryDialogue } from './StoryDialogue';
-import { ChallengeHUD } from './ChallengeHUD';
 import { ReportScreen } from './ReportScreen';
 import { StorySpotlight } from './StorySpotlight';
 import { StoryHotspots } from './StoryHotspots';
@@ -30,6 +29,7 @@ interface StoryModeOverlayProps {
   // Callbacks
   onExitToSandbox: () => void;     // Skip to sandbox (no reset)
   onExitToLanding: () => void;     // Back to landing
+  onEnterChallengeMode?: () => void;
   onOpenRightPanel?: () => void;   // Open right panel for inspector tour step
   isTourActive?: boolean;
 }
@@ -44,6 +44,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   wavefunctionData,
   onExitToSandbox,
   onExitToLanding,
+  onEnterChallengeMode,
   onOpenRightPanel,
   isTourActive = false,
 }) => {
@@ -129,22 +130,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
 
   // ── Derived flags ─────────────────────────────────────────────────────────
   const isReportBeat = currentBeat?.id === 'report';
-  const isChallengeBeat = currentBeat?.id === 'challenge';
   const totalBeats = state.beats.length;
-
-  // Challenge done auto-advance (only for Challenge beat)
-  const challengeDoneRef = useRef(false);
-  useEffect(() => {
-    if (!isChallengeBeat) return;
-    const done =
-      Math.abs(currentE - state.challengeTarget) <= state.challengeTolerance &&
-      wellType === 'infinite';
-    if (done && !challengeDoneRef.current) {
-      challengeDoneRef.current = true;
-      const t = setTimeout(() => advance(), 1400);
-      return () => clearTimeout(t);
-    }
-  }, [isChallengeBeat, currentE, state.challengeTarget, state.challengeTolerance, wellType, advance]);
 
   // ── Report screen — full-overlay card ────────────────────────────────────
   if (isReportBeat && isLastLine) {
@@ -160,6 +146,7 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
             activeN={activeN}
             onFreeExplore={onExitToSandbox}
             onExitToLanding={onExitToLanding}
+            onEnterChallengeMode={onEnterChallengeMode}
           />
         </div>
       </div>
@@ -174,7 +161,6 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
 
   return (
     <div className="story-overlay" style={{ pointerEvents: 'none' }}>
-      {/* ── Challenge HUD (top-right, above canvas) ── */}
       {/* ── Story Beat Highlight ── */}
       {!isTourActive && (
         <StorySpotlight
@@ -182,18 +168,6 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
           onSelectStepIndex={() => {}}
           highlightSelector={currentBeat?.highlightSelector}
         />
-      )}
-
-      {isChallengeBeat && !isTourActive && (
-        <div className="story-challenge-hud-anchor" style={{ pointerEvents: 'auto', zIndex: 85 }}>
-          <ChallengeHUD
-            target={state.challengeTarget}
-            currentE={currentE}
-            tolerance={state.challengeTolerance}
-            wellType={wellType}
-            activeN={activeN}
-          />
-        </div>
       )}
 
       {/* ── Dialogue box (bottom of canvas) ──

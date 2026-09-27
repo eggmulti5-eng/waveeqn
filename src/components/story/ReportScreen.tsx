@@ -10,6 +10,7 @@ interface ReportScreenProps {
   activeN: number;
   onFreeExplore: () => void;
   onExitToLanding?: () => void;
+  onEnterChallengeMode?: () => void;
 }
 
 // Export wavefunction curve as PNG via an off-screen canvas
@@ -95,6 +96,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
   activeN,
   onFreeExplore,
   onExitToLanding,
+  onEnterChallengeMode,
 }) => {
   const sortedNs = Array.from(visitedNs).sort((a, b) => a - b);
   const wellTypesArr = Array.from(visitedWellTypes);
@@ -175,7 +177,7 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
               className="story-free-explore-btn"
               onClick={onExitToLanding}
               title="Return to main landing page"
-              style={{ flex: 1 }}
+              style={{ flex: 1, backgroundColor: 'var(--bg-card)', color: 'var(--ink)' }}
             >
               ⌂ MENU
             </button>
@@ -185,10 +187,21 @@ export const ReportScreen: React.FC<ReportScreenProps> = ({
             className="story-free-explore-btn"
             onClick={onFreeExplore}
             title="Continue into Sandbox mode"
-            style={{ flex: 2 }}
+            style={{ flex: 2, backgroundColor: 'var(--bg-card)', color: 'var(--ink)' }}
           >
-            ⟨ ⟩ FREE EXPLORE
+            ⟨ ⟩ SANDBOX
           </button>
+          {onEnterChallengeMode && (
+            <button
+              type="button"
+              className="story-free-explore-btn"
+              onClick={onEnterChallengeMode}
+              title="Test your intuition in Challenge Mode"
+              style={{ flex: 2 }}
+            >
+              ★ CHALLENGE MODE
+            </button>
+          )}
         </div>
 
         <p className="story-report-preserve-note">

@@ -10,7 +10,6 @@ export type BeatId =
   | 'interaction'
   | 'feedback'
   | 'escalation'
-  | 'challenge'
   | 'report';
 
 export interface DialogueLine {
@@ -34,33 +33,16 @@ export interface BeatContext {
   wellType: WellType;
   currentV: number;
   initialV: number;
-  challengeTarget: number;
   currentE: number;
-  challengeTolerance: number;
-  challengeDone: boolean;
   hasInteractedL: boolean;
   hasInteractedV: boolean;
   hasToggledProb: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// Challenge target generation
-// ---------------------------------------------------------------------------
-function generateChallengeTarget(): { target: number; hint: string } {
-  const n = 2;
-  const Ls = [1.8, 2.0, 2.2, 2.5, 2.8, 3.0, 3.2, 3.5, 3.8];
-  const L = Ls[Math.floor(Math.random() * Ls.length)];
-  const E = (n * n * Math.PI * Math.PI) / (2 * L * L);
-  return {
-    target: parseFloat(E.toFixed(3)),
-    hint: `hint: try n=2, L ≈ ${L.toFixed(1)}`,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Beat content
 // ---------------------------------------------------------------------------
-function buildBeats(target: number, hint: string, tol: number): Beat[] {
+function buildBeats(): Beat[] {
   return [
     {
       id: 'intro',
@@ -162,17 +144,6 @@ function buildBeats(target: number, hint: string, tol: number): Beat[] {
             ctx.currentV < 60)),
     },
     {
-      id: 'challenge',
-      highlightSelector: '[data-tour="slider-L"]',
-      lines: [
-        {
-          text: `CHALLENGE — Match the Wave! Ready to test your quantum intuition? Switch back to an INFINITE well, select n=2, and tune the L slider until your displayed E_n matches the target energy within ±${tol.toFixed(2)} a.u.\n\nTarget E = ${target.toFixed(3)} a.u. (${hint})`,
-          shortText: `CHALLENGE — Match E_n to ${target.toFixed(3)} ±${tol.toFixed(2)} a.u. Use n=2, infinite well, tune L. (${hint})`,
-        },
-      ],
-      isComplete: (ctx) => ctx.challengeDone,
-    },
-    {
       id: 'report',
       noAction: true,
       lines: [
@@ -197,9 +168,6 @@ export interface StoryModeState {
   beatIndex: number;
   lineIndex: number;
   skipTheory: boolean;
-  challengeTarget: number;
-  challengeHint: string;
-  challengeTolerance: number;
   hasOrbited: boolean;
   initialL: number;
   initialV: number;
@@ -230,17 +198,8 @@ export interface StoryModeInput {
 }
 
 export function useStoryMode(input: StoryModeInput): StoryModeControls {
-  const challengeTolerance = 0.12;
-  const challengeRef = useRef(generateChallengeTarget());
-
   // Build beats once (stable reference)
-  const beatsRef = useRef<Beat[]>(
-    buildBeats(
-      challengeRef.current.target,
-      challengeRef.current.hint,
-      challengeTolerance,
-    ),
-  );
+  const beatsRef = useRef<Beat[]>(buildBeats());
 
   const [beatIndex, setBeatIndex] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
@@ -300,10 +259,6 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
   const isLastLine = lineIndex >= lines.length - 1;
   const isLastBeat = beatIndex >= beats.length - 1;
 
-  const challengeDone =
-    Math.abs(input.currentE - challengeRef.current.target) <= challengeTolerance &&
-    input.wellType === 'infinite';
-
   const fullCtx: BeatContext = {
     hasOrbited,
     initialL: beatStartLRef.current,
@@ -312,10 +267,7 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
     wellType: input.wellType,
     currentV: input.currentV,
     initialV: beatStartVRef.current,
-    challengeTarget: challengeRef.current.target,
     currentE: input.currentE,
-    challengeTolerance,
-    challengeDone,
     hasInteractedL,
     hasInteractedV,
     hasToggledProb,
@@ -344,9 +296,6 @@ export function useStoryMode(input: StoryModeInput): StoryModeControls {
       beatIndex,
       lineIndex,
       skipTheory,
-      challengeTarget: challengeRef.current.target,
-      challengeHint: challengeRef.current.hint,
-      challengeTolerance,
       hasOrbited,
       initialL: beatStartLRef.current,
       initialV: beatStartVRef.current,

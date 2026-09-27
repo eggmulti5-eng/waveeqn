@@ -224,9 +224,11 @@ export function finiteWell(
   let cached = diagCache.get(cacheKey);
 
   if (!cached) {
-    // Domain: [-L, 2L]
-    const xMin = -L;
-    const xMax = 2 * L;
+    // Domain: [-3L, 4L] - massive padding on both sides to let exponential tails decay naturally to 0.
+    // This prevents the hard boundary psi=0 condition from creating artificial loops/arcs
+    // when the decay length is large (e.g. low V or high n).
+    const xMin = -3 * L;
+    const xMax = 4 * L;
     const dx = (xMax - xMin) / (N - 1);
 
     // Kinetic term stencil coefficient: ħ² / (2 * m * dx²)

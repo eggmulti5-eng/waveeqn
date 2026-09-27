@@ -9,7 +9,9 @@ import { useQuantumState } from './physics/useQuantumState';
 import { StorySpotlight } from './components/story/StorySpotlight';
 import { StoryHotspots } from './components/story/StoryHotspots';
 
-type AppRoute = 'landing' | 'sandbox' | 'story-mode';
+import { ChallengeModeOverlay } from './components/story/ChallengeModeOverlay';
+
+type AppRoute = 'landing' | 'sandbox' | 'story-mode' | 'challenge-mode';
 
 export const App: React.FC = () => {
   const [route, setRoute] = useState<AppRoute>('landing');
@@ -121,12 +123,24 @@ export const App: React.FC = () => {
     setRoute('landing');
   }, [restoreSandboxSnapshot]);
 
+  const handleEnterChallengeMode = useCallback(() => {
+    saveSandboxSnapshot();
+    resetToStoryDefaults();
+    setRoute('challenge-mode');
+  }, [saveSandboxSnapshot, resetToStoryDefaults]);
+
+  const handleExitChallengeToLanding = useCallback(() => {
+    restoreSandboxSnapshot();
+    setRoute('landing');
+  }, [restoreSandboxSnapshot]);
+
   // Route: Landing Page
   if (route === 'landing') {
     return (
       <LandingPage
         onEnterSandbox={() => setRoute('sandbox')}
         onEnterStoryMode={handleEnterStoryMode}
+        onEnterChallengeMode={handleEnterChallengeMode}
       />
     );
   }
@@ -230,8 +244,19 @@ export const App: React.FC = () => {
           wavefunctionData={wavefunctionData}
           onExitToSandbox={handleExitStoryToSandbox}
           onExitToLanding={handleExitStoryToLanding}
+          onEnterChallengeMode={handleEnterChallengeMode}
           onOpenRightPanel={() => setIsRightPanelOpen(true)}
           isTourActive={activeTourStepIndex !== null}
+        />
+      )}
+
+      {/* Challenge mode overlay */}
+      {route === 'challenge-mode' && (
+        <ChallengeModeOverlay
+          currentL={L}
+          currentE={activeState?.E ?? 0}
+          currentM={m}
+          onExitToLanding={handleExitChallengeToLanding}
         />
       )}
     </div>

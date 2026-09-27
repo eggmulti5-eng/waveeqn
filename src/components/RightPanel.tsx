@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Sliders, ArrowUpRight, ArrowDownRight, Zap, GitCompare } from 'lucide-react';
+import { MathText } from './MathText';
 import type {
   StateItem,
   TransitionItem,
@@ -46,7 +47,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
       <div className="panel-header">
         <div className="panel-header-title">
           <Sliders size={13} color="var(--accent)" />
-          <span>INSPECTOR // STATE n = {activeN}</span>
+          <span>INSPECTOR // STATE <MathText>{`$n = ${activeN}$`}</MathText></span>
         </div>
         <button
           type="button"
@@ -63,7 +64,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
         {/* Title & Auto-Description Block */}
         <div className="inspector-title-block">
           <div className="inspector-state-heading">
-            <span className="inspector-state-n">n = {activeN}</span>
+            <span className="inspector-state-n"><MathText>{`$n = ${activeN}$`}</MathText></span>
             <span
               className={`status-badge ${activeState.isBound ? 'bound-badge' : 'leaking-badge'}`}
             >
@@ -78,7 +79,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
           <div className="section-label">QUANTUM STATS</div>
 
           <div className="param-row">
-            <span className="param-name">Energy (Eₙ)</span>
+            <span className="param-name"><MathText>{`Energy ($E_n$)`}</MathText></span>
             <span className="param-val">{activeState.E.toFixed(3)} a.u.</span>
           </div>
 

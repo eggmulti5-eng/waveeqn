@@ -26,10 +26,7 @@ function generateChallengeTarget(): { target: number; hint: string } {
 }
 
 export const ChallengeModeOverlay: React.FC<ChallengeModeOverlayProps> = ({
-  currentL,
-  currentM,
   currentE,
-  onExitToLanding,
 }) => {
   const [targetE, setTargetE] = useState<number>(0);
   const [hint, setHint] = useState<string>('');
@@ -70,7 +67,7 @@ export const ChallengeModeOverlay: React.FC<ChallengeModeOverlayProps> = ({
           wellType="infinite"
           activeN={2} // Assumed n=2 for the challenge math
         />
-        <div style={{ background: 'var(--bg-panel)', padding: '8px 12px', marginTop: '8px', border: '1px solid var(--border-panel)', borderRadius: '4px', textAlign: 'center', fontSize: '13px', color: 'var(--ink)' }}>
+        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-panel)', textAlign: 'center', fontSize: '13px', color: 'var(--ink)' }}>
           Challenges Completed: <strong style={{ color: 'var(--accent)' }}>{completedCount}</strong>
         </div>
       </div>
@@ -78,59 +75,37 @@ export const ChallengeModeOverlay: React.FC<ChallengeModeOverlayProps> = ({
       {/* ── Dialogue Box ── */}
       <div className="story-dialogue-anchor" style={{ pointerEvents: 'auto', zIndex: 90 }}>
         <div className="story-dialogue">
-          <AxiomPortrait isTalking={!isSuccess} mood={isSuccess ? 'excited' : 'neutral'} />
-          <div className="story-dialogue-content">
-            <h3 className="story-dialogue-speaker">AXIOM</h3>
-            {!isSuccess ? (
-              <p className="story-dialogue-text">
-                Match the target energy by tuning L and/or m. Ready?
-                <br /><br />
-                Target E = {targetE.toFixed(3)} a.u. ({hint})
-              </p>
-            ) : (
-              <p className="story-dialogue-text">
-                Spot on! You matched the wavefunction perfectly.
-                <br /><br />
-                Ready for another round?
-              </p>
-            )}
-          </div>
-          <div className="story-dialogue-controls">
-            {isSuccess && (
-              <button className="story-button story-button-primary" onClick={initChallenge}>
-                NEXT CHALLENGE 
-              </button>
-            )}
+          <div className="story-dialogue-body">
+            <div className="story-avatar" aria-hidden="true">
+              <div className="story-avatar-inner">
+                <AxiomPortrait isTyping={!isSuccess} mood={isSuccess ? 'happy' : 'idle'} size={44} />
+              </div>
+              <span className="story-avatar-name">AXIOM</span>
+            </div>
+            <div className="story-dialogue-right">
+              {!isSuccess ? (
+                <div className="story-dialogue-text">
+                  Match the target energy by tuning L and/or m. Ready?<br /><br />
+                  Target E = {targetE.toFixed(3)} a.u. ({hint})
+                </div>
+              ) : (
+                <div className="story-dialogue-text">
+                  Spot on! You matched the wavefunction perfectly.<br /><br />
+                  Ready for another round?
+                </div>
+              )}
+              <div className="story-dialogue-controls">
+                {isSuccess && (
+                  <button className="story-continue-btn ready" onClick={initChallenge}>
+                    NEXT CHALLENGE 
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Persistent Global Exit Control ── */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: '56px', 
-          right: '16px', 
-          zIndex: 2147483647, // Max possible z-index
-          pointerEvents: 'auto' 
-        }}
-      >
-        <button 
-          onClick={onExitToLanding} 
-          className="story-button story-button-secondary"
-          style={{
-            backgroundColor: '#1E232B',
-            border: '1px solid #C2543B',
-            color: '#F5EFDD',
-            padding: '8px 12px',
-            fontSize: '11px',
-            letterSpacing: '1px',
-            textTransform: 'uppercase'
-          }}
-        >
-          Exit to Landing
-        </button>
-      </div>
     </div>
   );
 };

@@ -10,6 +10,7 @@ import { StorySpotlight } from './components/story/StorySpotlight';
 import { StoryHotspots } from './components/story/StoryHotspots';
 
 import { ChallengeModeOverlay } from './components/story/ChallengeModeOverlay';
+import { MathText } from './components/MathText';
 
 type AppRoute = 'landing' | 'sandbox' | 'story-mode' | 'challenge-mode';
 
@@ -18,6 +19,7 @@ export const App: React.FC = () => {
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [cameraResetTrigger, setCameraResetTrigger] = useState(0);
   const [zoomPct, setZoomPct] = useState(100);
+  const [showFormulas, setShowFormulas] = useState(false);
 
   // Unified quantum physics state hook
   const quantumState = useQuantumState();
@@ -63,6 +65,14 @@ export const App: React.FC = () => {
   const [isTourModeEnabled, setIsTourModeEnabled] = useState(false);
   const [activeTourStepIndex, setActiveTourStepIndex] = useState<number | null>(null);
   const [showNewHere, setShowNewHere] = useState(true);
+  
+  // ── Formula Popover State ───────────────────────────────────────────────
+  const [activeFormula, setActiveFormula] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  const handleFormulaClick = useCallback((id: string, e: any) => {
+    // e is a ThreeEvent which provides clientX/clientY from the DOM
+    setActiveFormula({ id, x: e.clientX, y: e.clientY });
+  }, []);
 
   const handleToggleTourMode = useCallback(() => {
     setIsTourModeEnabled((prev) => {
@@ -190,6 +200,8 @@ export const App: React.FC = () => {
         setIsCompareActive={setIsCompareActive}
         isCrossSection={isCrossSection}
         setIsCrossSection={setIsCrossSection}
+        showFormulas={showFormulas}
+        setShowFormulas={setShowFormulas}
         zoomPct={zoomPct}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -203,6 +215,9 @@ export const App: React.FC = () => {
         onToggleTourMode={handleToggleTourMode}
         showNewHere={showNewHere}
         onDismissNewHere={() => setShowNewHere(false)}
+        onExitToSandbox={route === 'story-mode' ? handleExitStoryToSandbox : undefined}
+        onExitToLanding={route === 'challenge-mode' ? handleBackToLanding : undefined}
+        onFormulaClick={handleFormulaClick}
       />
 
       <RightPanel
@@ -245,9 +260,64 @@ export const App: React.FC = () => {
           onExitToSandbox={handleExitStoryToSandbox}
           onExitToLanding={handleExitStoryToLanding}
           onEnterChallengeMode={handleEnterChallengeMode}
-          onOpenRightPanel={() => setIsRightPanelOpen(true)}
           isTourActive={activeTourStepIndex !== null}
+          activeFormula={activeFormula?.id ?? null}
+          onClearFormula={() => setActiveFormula(null)}
         />
+      )}
+
+      {/* Formula popover (only active in Sandbox/Challenge mode when a formula is clicked) */}
+      {route !== 'story-mode' && activeFormula && (
+        <div 
+          style={{
+            position: 'absolute',
+            left: activeFormula.x,
+            top: activeFormula.y,
+            transform: 'translate(-50%, -100%)',
+            marginTop: '-16px',
+            background: 'var(--bg-panel)',
+            border: '2px solid var(--border-accent)',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            boxShadow: 'var(--shadow-float)',
+            zIndex: 9999,
+            width: '260px',
+            pointerEvents: 'auto',
+          }}
+        >
+          <button
+            onClick={() => setActiveFormula(null)}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--ink-muted)'
+            }}
+            aria-label="Close formula explanation"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+          </button>
+          <div style={{ fontSize: '12px', lineHeight: 1.4, color: 'var(--ink)' }}>
+            {activeFormula.id === 'schrodinger' && (
+              <p style={{ margin: 0 }}>
+                This is the time-independent Schrödinger equation. It's the master equation governing the simulation, balancing kinetic and potential energy to find the total energy.
+              </p>
+            )}
+            {activeFormula.id === 'energy' && (
+              <p style={{ margin: 0 }}>
+                This formula defines the allowed energy levels. Notice how energy scales with the square of the quantum number <MathText>{`$n$`}</MathText>—higher states require exponentially more energy.
+              </p>
+            )}
+            {activeFormula.id === 'wavefunction' && (
+              <p style={{ margin: 0 }}>
+                This defines the shape of the wave. The well width <MathText>{`$L$`}</MathText> and quantum number <MathText>{`$n$`}</MathText> determine how many peaks fit inside the potential well.
+              </p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Challenge mode overlay */}

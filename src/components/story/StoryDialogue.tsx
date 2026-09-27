@@ -3,6 +3,7 @@ import type { Beat, DialogueLine } from './useStoryMode';
 import type { WellType } from '../../physics/useQuantumState';
 import { AxiomPortrait, type AxiomMood } from './AxiomPortrait';
 import { HelpCircle, Sparkles } from 'lucide-react';
+import { MathText } from '../MathText';
 
 interface StoryDialogueProps {
   beat: Beat;
@@ -255,7 +256,7 @@ export const StoryDialogue: React.FC<StoryDialogueProps> = ({
         {/* Text + controls */}
         <div className="story-dialogue-right">
           <div className="story-dialogue-text" aria-live="polite">
-            {shownText}
+            <MathText>{shownText}</MathText>
             {isTyping && <span className="story-cursor">▌</span>}
           </div>
 

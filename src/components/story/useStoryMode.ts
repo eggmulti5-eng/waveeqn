@@ -57,8 +57,8 @@ function buildBeats(): Beat[] {
           shortText: 'Quantization forces discrete energies — made tangible in 3D.',
         },
         {
-          text: 'See that luminous ribbon floating in the center? That\'s your wavefunction ψ(x). It encodes every physical secret the universe knows about this particle. Let\'s fire up the bench and explore!',
-          shortText: 'The ribbon is ψ(x). Let\'s fire up the bench!',
+          text: 'See that luminous ribbon floating in the center? That\'s your wavefunction $\\psi(x)$. It encodes every physical secret the universe knows about this particle. Let\'s fire up the bench and explore!',
+          shortText: 'The ribbon is $\\psi(x)$. Let\'s fire up the bench!',
         },
       ],
       isComplete: () => true,
@@ -72,12 +72,12 @@ function buildBeats(): Beat[] {
           shortText: 'ACTION: Orbit the chamber (left-drag canvas).',
         },
         {
-          text: 'Look at that arch! This is the fundamental Ground State (n=1) of an infinite square well. Notice how ψ snaps cleanly to zero at both boundary walls? Exactly like a plucked cello string clamped tight at both ends.',
-          shortText: 'n=1: Single arch — boundary conditions clamp ψ=0 at walls.',
+          text: 'Look at that arch! This is the fundamental Ground State ($n=1$) of an infinite square well. Notice how $\\psi$ snaps cleanly to zero at both boundary walls? Exactly like a plucked cello string clamped tight at both ends.',
+          shortText: '$n=1$: Single arch — boundary conditions clamp $\\psi=0$ at walls.',
         },
         {
-          text: 'The ribbon\'s height above the zero line equals the amplitude ψ(x). The taller the arch, the higher the amplitude. You can also zoom and reset camera anytime using the bottom toolbar. Pure quantum poetry in 3D!',
-          shortText: 'Ribbon height = ψ amplitude. Camera controls in toolbar.',
+          text: 'The ribbon\'s height above the zero line equals the amplitude $\\psi(x)$. The taller the arch, the higher the amplitude. You can also zoom and reset camera anytime using the bottom toolbar. Pure quantum poetry in 3D!',
+          shortText: 'Ribbon height = $\\psi$ amplitude. Camera controls in toolbar.',
         },
       ],
       isComplete: (ctx) => ctx.hasOrbited,
@@ -91,8 +91,8 @@ function buildBeats(): Beat[] {
           shortText: 'ACTION: Drag the Well Width (L) slider.',
         },
         {
-          text: 'Notice that? Wider well → lower energy! The governing formula is E_n = n²π²ħ² / (2mL²) — energy drops quadratically as 1/L². Doubling the well halves the spatial confinement and plunges E_1 to a quarter of its original value!',
-          shortText: 'E_n ∝ 1/L² — wider well relieves confinement pressure.',
+          text: 'Notice that? Wider well → lower energy! The governing formula is $E_n = n^2 \\pi^2 \\hbar^2 / 2mL^2$ — energy drops quadratically as $1/L^2$. Doubling the well halves the spatial confinement and plunges $E_1$ to a quarter of its original value!',
+          shortText: '$E_n \\propto 1/L^2$ — wider well relieves confinement pressure.',
         },
         {
           text: 'This extreme sensitivity to confinement size is why atomic spectra shift so dramatically across the periodic table — even a fractional angstrom change in atomic radius reorganizes the whole spectrum!',
@@ -106,16 +106,16 @@ function buildBeats(): Beat[] {
       highlightSelector: '[data-tour="toolbar-psi"]',
       lines: [
         {
-          text: 'ACTION: Look down at the bottom toolbar and click the |ψ|² button (the right half of the ψ / |ψ|² toggle pill).',
-          shortText: 'ACTION: Toggle to |ψ|² in bottom toolbar.',
+          text: 'ACTION: Look down at the bottom toolbar and click the $|\\psi|^2$ button (the right half of the $\\psi$ / $|\\psi|^2$ toggle pill).',
+          shortText: 'ACTION: Toggle to $|\\psi|^2$ in bottom toolbar.',
         },
         {
-          text: 'Aha! ψ itself is an abstract complex amplitude that can dip negative — you can\'t build a laboratory detector for negative numbers! But |ψ|² is the Born rule probability density: the physical, measurable chance per unit length of detecting the particle.',
-          shortText: '|ψ|² = probability density. ψ can be negative; |ψ|² is strictly ≥ 0.',
+          text: 'Aha! $\\psi$ itself is an abstract complex amplitude that can dip negative — you can\'t build a laboratory detector for negative numbers! But $|\\psi|^2$ is the Born rule probability density: the physical, measurable chance per unit length of detecting the particle.',
+          shortText: '$|\\psi|^2$ = probability density. $\\psi$ can be negative; $|\\psi|^2$ is strictly $\\ge 0$.',
         },
         {
-          text: 'Notice how any negative lobes in ψ (for n ≥ 2) instantly flip into positive probability peaks in |ψ|²? That sign flip is real physics — quantum interference in superpositions depends entirely on the relative sign of each term!',
-          shortText: 'Negative ψ lobes → positive |ψ|² peaks. Sign governs interference.',
+          text: 'Notice how any negative lobes in $\\psi$ (for $n \\ge 2$) instantly flip into positive probability peaks in $|\\psi|^2$? That sign flip is real physics — quantum interference in superpositions depends entirely on the relative sign of each term!',
+          shortText: 'Negative $\\psi$ lobes → positive $|\\psi|^2$ peaks. Sign governs interference.',
         },
       ],
       isComplete: (ctx) => ctx.hasToggledProb || ctx.displayMode === 'prob',
@@ -128,8 +128,8 @@ function buildBeats(): Beat[] {
           shortText: 'ACTION: Switch to FINITE well, lower V.',
         },
         {
-          text: 'Now things get wild! With a finite barrier, ψ doesn\'t snap to zero at the walls — it bleeds right through into the classically forbidden zone as an exponential tail. The particle genuinely has a non-zero probability of being detected outside the well!',
-          shortText: 'Finite well: ψ decays exponentially outside — classically impossible!',
+          text: 'Now things get wild! With a finite barrier, $\\psi$ doesn\'t snap to zero at the walls — it bleeds right through into the classically forbidden zone as an exponential tail. The particle genuinely has a non-zero probability of being detected outside the well!',
+          shortText: 'Finite well: $\\psi$ decays exponentially outside — classically impossible!',
         },
         {
           text: 'This is quantum tunnelling! At transistor gate scales below 5 nm, tunnelling is the dominant leakage headache chip designers battle every day. Watch those ghostly tails spread as you drop V!',

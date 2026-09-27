@@ -1,4 +1,5 @@
 import React from 'react';
+import { MathText } from '../MathText';
 
 interface ChallengeHUDProps {
   target: number;
@@ -30,11 +31,11 @@ export const ChallengeHUD: React.FC<ChallengeHUDProps> = ({
       </div>
       <div className="challenge-hud-rows">
         <div className="challenge-hud-row">
-          <span className="challenge-hud-key">TARGET E</span>
+          <span className="challenge-hud-key"><MathText>{`TARGET $E$`}</MathText></span>
           <span className="challenge-hud-val">{target.toFixed(3)} a.u.</span>
         </div>
         <div className="challenge-hud-row">
-          <span className="challenge-hud-key">CURRENT E</span>
+          <span className="challenge-hud-key"><MathText>{`CURRENT $E$`}</MathText></span>
           <span className="challenge-hud-val">{currentE.toFixed(3)} a.u.</span>
         </div>
         <div className="challenge-hud-row">
@@ -52,7 +53,7 @@ export const ChallengeHUD: React.FC<ChallengeHUDProps> = ({
         )}
         {wellType === 'infinite' && activeN !== 2 && (
           <div className="challenge-hud-row">
-            <span className="challenge-hud-key warning-text">⚠ Set n = 2 in state list</span>
+            <span className="challenge-hud-key warning-text"><MathText>{`⚠ Set $n = 2$ in state list`}</MathText></span>
           </div>
         )}
       </div>

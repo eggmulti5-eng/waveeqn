@@ -8,13 +8,13 @@
  * Scopes z-index and pointer-events so that ONLY ONE panel system
  * (Story Dialogue OR Feature Tour Card) can ever be visible and receive input at a time.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './story.css';
 import { useStoryMode } from './useStoryMode';
 import { StoryDialogue } from './StoryDialogue';
 import { ReportScreen } from './ReportScreen';
 import { StorySpotlight } from './StorySpotlight';
-import { StoryHotspots } from './StoryHotspots';
+
 import type { WellType, WavefunctionData } from '../../physics/useQuantumState';
 
 interface StoryModeOverlayProps {
@@ -30,8 +30,9 @@ interface StoryModeOverlayProps {
   onExitToSandbox: () => void;     // Skip to sandbox (no reset)
   onExitToLanding: () => void;     // Back to landing
   onEnterChallengeMode?: () => void;
-  onOpenRightPanel?: () => void;   // Open right panel for inspector tour step
   isTourActive?: boolean;
+  activeFormula?: string | null;
+  onClearFormula?: () => void;
 }
 
 export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
@@ -45,8 +46,9 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
   onExitToSandbox,
   onExitToLanding,
   onEnterChallengeMode,
-  onOpenRightPanel,
   isTourActive = false,
+  activeFormula = null,
+  onClearFormula,
 }) => {
   const storyControls = useStoryMode({
     currentL,
@@ -153,11 +155,40 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
     );
   }
 
-  // Hotspots are only shown between beats or after the mandatory action for the active beat is done
-  const canShowHotspots =
-    !isTourActive &&
-    !isReportBeat &&
-    (currentBeat?.noAction || isBeatActionDone);
+
+  let activeBeat = currentBeat;
+  let activeLine = currentLine;
+  let activeLineIndex = storyControls.state.lineIndex;
+  let overrideAdvance = advance;
+  let isOverrideActionDone = isBeatActionDone;
+  let isOverrideLastLine = isLastLine;
+  let isOverrideLastBeat = isLastBeat;
+  let isOverrideTotalLines = state.beats[state.beatIndex]?.lines.length ?? 0;
+
+  if (activeFormula) {
+    let formulaText = "";
+    if (activeFormula === 'schrodinger') {
+      formulaText = "This is the time-independent Schrödinger equation. It's the master equation governing the simulation, balancing kinetic and potential energy to find the total energy.";
+    } else if (activeFormula === 'energy') {
+      formulaText = "This formula defines the allowed energy levels. Notice how energy scales with the square of the quantum number n—higher states require exponentially more energy.";
+    } else if (activeFormula === 'wavefunction') {
+      formulaText = "This defines the shape of the wave. The well width L and quantum number n determine how many peaks fit inside the potential well.";
+    }
+
+    activeBeat = {
+      id: 'intro' as any,
+      lines: [{ text: formulaText, shortText: '' }],
+      noAction: true,
+      isComplete: () => true,
+    } as any;
+    activeLine = activeBeat.lines[0];
+    activeLineIndex = 0;
+    overrideAdvance = onClearFormula || (() => {});
+    isOverrideActionDone = true;
+    isOverrideLastLine = false; // Prevents "Finish story mode" text, we just want "CONTINUE"
+    isOverrideLastBeat = false;
+    isOverrideTotalLines = 1;
+  }
 
   return (
     <div className="story-overlay" style={{ pointerEvents: 'none' }}>
@@ -182,50 +213,24 @@ export const StoryModeOverlay: React.FC<StoryModeOverlayProps> = ({
         }}
       >
         <StoryDialogue
-          beat={currentBeat}
-          line={currentLine}
-          lineIndex={state.lineIndex}
-          totalLines={currentBeat?.lines.length ?? 1}
+          beat={activeBeat as any}
+          line={activeLine}
+          lineIndex={activeLineIndex}
+          totalLines={isOverrideTotalLines}
           beatIndex={state.beatIndex}
           totalBeats={totalBeats}
-          isLastLine={isLastLine}
-          isLastBeat={isLastBeat}
-          isBeatActionDone={isBeatActionDone}
+          isLastLine={isOverrideLastLine}
+          isLastBeat={isOverrideLastBeat}
+          isBeatActionDone={isOverrideActionDone}
           skipTheory={state.skipTheory}
           onSetSkipTheory={setSkipTheory}
-          onAdvance={advance}
+          onAdvance={overrideAdvance}
           onSkipAll={onExitToSandbox}
           currentL={currentL}
           currentV={currentV}
           wellType={wellType}
           isTourActive={isTourActive}
         />
-      </div>
-      {/* ── Persistent Global Exit Control ── */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: '56px', 
-          right: '16px', 
-          zIndex: 2147483647, // Max possible z-index
-          pointerEvents: 'auto' 
-        }}
-      >
-        <button 
-          onClick={onExitToSandbox} 
-          className="story-button story-button-secondary"
-          style={{
-            backgroundColor: '#1E232B',
-            border: '1px solid #C2543B',
-            color: '#F5EFDD',
-            padding: '8px 12px',
-            fontSize: '11px',
-            letterSpacing: '1px',
-            textTransform: 'uppercase'
-          }}
-        >
-          {isTourActive ? 'Skip Tour' : 'Exit to Sandbox'}
-        </button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, BookmarkPlus } from 'lucide-react';
+import { MathText } from './MathText';
 import type { WellType, StateItem, SavedSlot } from '../physics/useQuantumState';
 
 interface LeftPanelProps {
@@ -44,33 +45,51 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onSaveSlotA,
   onSaveSlotB,
 }) => {
+  const [showSolverTooltip, setShowSolverTooltip] = React.useState(false);
+
   return (
     <aside className="left-panel">
       {/* Title block */}
-      <div className="title-block">
-        <div className="brand-row">
-          <div className="brand-title">
-            <span className="brand-glyph">Ψ</span>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>Ψ</span>
             <span>QUANTUM.WELL</span>
           </div>
-          {/* Fix 4: badge + ? info affordance, consistent between ANALYTIC and NUMERICALLY SOLVED */}
-          <div className="badge-row">
-            <span className="status-badge">
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               {wellType === 'infinite' ? 'ANALYTIC' : 'NUMERICALLY SOLVED'}
             </span>
-            {wellType === 'finite' && (
-              <button
-                type="button"
-                className="status-badge-info"
-                title="Solved via finite-difference method (FDM): no closed-form solution exists for finite wells, so the wavefunction is computed numerically on a discretized spatial grid."
-                aria-label="About the numerical solver"
-              >
-                ?
-              </button>
+            <button
+              type="button"
+              onMouseEnter={() => setShowSolverTooltip(true)}
+              onMouseLeave={() => setShowSolverTooltip(false)}
+              onClick={() => setShowSolverTooltip(!showSolverTooltip)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '14px', height: '14px', borderRadius: '50%',
+                backgroundColor: 'rgba(139, 74, 59, 0.1)', color: 'var(--accent)',
+                fontSize: '8px', fontWeight: 700, cursor: 'pointer', border: 'none'
+              }}
+              aria-label="About the solver"
+            >
+              ?
+            </button>
+            
+            {showSolverTooltip && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: '8px',
+                width: '220px', padding: '10px 12px',
+                backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-panel)',
+                borderRadius: '4px', boxShadow: 'var(--shadow-panel)',
+                fontSize: '11px', lineHeight: 1.4, color: 'var(--ink)', zIndex: 100
+              }}>
+                <strong>ANALYTIC:</strong> solved with a closed-form equation (infinite well only).<br /><br />
+                <strong>NUMERICALLY SOLVED:</strong> no closed-form solution exists for finite wells, so the wavefunction is computed via the finite-difference method (discretizing space and solving numerically).
+              </div>
             )}
           </div>
         </div>
-        <div className="sub-header">1D Schrödinger Bound & Barrier Solver</div>
       </div>
 
       {/* Live 3-stat row */}
@@ -244,8 +263,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
       {/* Scrollable State List n=1..8 */}
       <div className="list-container" data-tour="state-list">
         <div className="list-section-header">
-          <span>EIGENSTATES (n = 1..8)</span>
-          <span>ENERGY (Eₙ)</span>
+          <span><MathText>{`EIGENSTATES ($n = 1..8$)`}</MathText></span>
+          <span><MathText>{`ENERGY ($E_n$)`}</MathText></span>
         </div>
 
         {filteredStates.map((st) => {
@@ -269,7 +288,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   title={st.isBound ? 'Bound state (E < V)' : 'Leaking state (E ≥ V)'}
                 />
                 <div className="state-info">
-                  <span className="state-n-label">n = {st.n}</span>
+                  <span className="state-n-label"><MathText>{`$n = ${st.n}$`}</MathText></span>
                   <span className="state-sub-desc">{st.title}</span>
                 </div>
               </div>

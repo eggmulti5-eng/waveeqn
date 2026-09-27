@@ -9,6 +9,8 @@ interface TopBarProps {
   onToggleTourMode?: () => void;
   showNewHere?: boolean;
   onDismissNewHere?: () => void;
+  onExitToSandbox?: () => void;
+  onExitToLanding?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -19,6 +21,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleTourMode,
   showNewHere,
   onDismissNewHere,
+  onExitToSandbox,
+  onExitToLanding,
 }) => {
   return (
     <header className="top-bar">
@@ -113,6 +117,53 @@ export const TopBar: React.FC<TopBarProps> = ({
               </div>
             )}
           </div>
+        )}
+
+        {/* Story/Challenge Mode Exit Buttons */}
+        {onExitToSandbox && (
+          <button
+            type="button"
+            className="top-bar-btn exit-mode-btn"
+            onClick={onExitToSandbox}
+            title="Exit to Sandbox"
+            style={{
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+              color: '#F5EFDD',
+              backgroundColor: '#1E232B',
+              border: '1px solid #C2543B',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginLeft: '4px'
+            }}
+          >
+            EXIT TO SANDBOX
+          </button>
+        )}
+        
+        {onExitToLanding && (
+          <button
+            type="button"
+            className="top-bar-btn exit-mode-btn"
+            onClick={onExitToLanding}
+            title="Exit to Landing"
+            style={{
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+              color: '#F5EFDD',
+              backgroundColor: '#1E232B',
+              border: '1px solid #C2543B',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginLeft: '4px'
+            }}
+          >
+            EXIT TO LANDING
+          </button>
         )}
       </div>
 

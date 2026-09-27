@@ -8,6 +8,8 @@ interface FloatingToolbarProps {
   setIsCompareActive: (active: boolean | ((prev: boolean) => boolean)) => void;
   isCrossSection: boolean;
   setIsCrossSection: (cs: boolean | ((prev: boolean) => boolean)) => void;
+  showFormulas: boolean;
+  setShowFormulas: (show: boolean | ((prev: boolean) => boolean)) => void;
   zoomPct: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -21,6 +23,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   setIsCompareActive,
   isCrossSection,
   setIsCrossSection,
+  showFormulas,
+  setShowFormulas,
   zoomPct,
   onZoomIn,
   onZoomOut,
@@ -75,6 +79,17 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       >
         <Box size={13} />
         <span>CROSS-SECTION</span>
+      </button>
+
+      {/* "Formulas" toggle */}
+      <button
+        type="button"
+        className={`toolbar-pill-btn ${showFormulas ? 'active' : ''}`}
+        onClick={() => setShowFormulas((prev) => !prev)}
+        title="Toggle floating physics formulas in the chamber"
+        aria-pressed={showFormulas}
+      >
+        FORMULAS
       </button>
 
       <div className="toolbar-divider" />

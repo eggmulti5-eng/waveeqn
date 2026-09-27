@@ -27,6 +27,8 @@ interface CanvasAreaProps {
   setIsCompareActive: (active: boolean | ((prev: boolean) => boolean)) => void;
   isCrossSection: boolean;
   setIsCrossSection: (cs: boolean | ((prev: boolean) => boolean)) => void;
+  showFormulas: boolean;
+  setShowFormulas: (show: boolean | ((prev: boolean) => boolean)) => void;
   zoomPct: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -40,6 +42,9 @@ interface CanvasAreaProps {
   onToggleTourMode?: () => void;
   showNewHere?: boolean;
   onDismissNewHere?: () => void;
+  onExitToSandbox?: () => void;
+  onExitToLanding?: () => void;
+  onFormulaClick?: (formulaId: string, e: any) => void;
 }
 
 export const CanvasArea: React.FC<CanvasAreaProps> = ({
@@ -59,6 +64,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   setIsCompareActive,
   isCrossSection,
   setIsCrossSection,
+  showFormulas,
+  setShowFormulas,
   zoomPct,
   onZoomIn,
   onZoomOut,
@@ -72,6 +79,9 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
   onToggleTourMode,
   showNewHere = false,
   onDismissNewHere,
+  onExitToSandbox,
+  onExitToLanding,
+  onFormulaClick,
 }) => {
   return (
     <main className="canvas-area">
@@ -83,6 +93,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         activeN={activeN}
         wavefunctionData={wavefunctionData}
         states={states}
+        showFormulas={showFormulas}
+        onFormulaClick={onFormulaClick}
         allowedTransitions={allowedTransitions}
         coupledTargetNs={coupledTargetNs}
         displayMode={displayMode}
@@ -104,6 +116,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         onToggleTourMode={onToggleTourMode}
         showNewHere={showNewHere}
         onDismissNewHere={onDismissNewHere}
+        onExitToSandbox={onExitToSandbox}
+        onExitToLanding={onExitToLanding}
       />
 
       {/* Bottom-Center Floating Toolbar */}
@@ -114,6 +128,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         setIsCompareActive={setIsCompareActive}
         isCrossSection={isCrossSection}
         setIsCrossSection={setIsCrossSection}
+        showFormulas={showFormulas}
+        setShowFormulas={setShowFormulas}
         zoomPct={zoomPct}
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}

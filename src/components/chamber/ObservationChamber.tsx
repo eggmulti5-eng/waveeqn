@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import { XR, createXRStore, XROrigin } from '@react-three/xr';
 
 const xrStore = createXRStore({ emulate: false });
@@ -34,6 +34,8 @@ interface ObservationChamberProps {
   slotA?: SavedSlot | null;
   slotB?: SavedSlot | null;
   zoomPct?: number;
+  showFormulas?: boolean;
+  onFormulaClick?: (formulaId: string, e: any) => void;
 }
 
 const ChamberControls: React.FC<{
@@ -137,6 +139,8 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
   slotA = null,
   slotB = null,
   zoomPct,
+  showFormulas = false,
+  onFormulaClick,
 }) => {
   // Determine if dual comparative overlay is active
   const isDualCompare = Boolean(isCompareActive && slotA && slotB);
@@ -246,6 +250,74 @@ export const ObservationChamber: React.FC<ObservationChamberProps> = ({
           allowedTransitions={allowedTransitions}
           coupledTargetNs={coupledTargetNs}
         />
+
+        {/* Floating Formulas (Additive Feature) */}
+        {showFormulas && (
+          <React.Suspense fallback={null}>
+            <group>
+              {/* Schrödinger Equation near the well boundary */}
+              <Text
+                position={[primaryL / 2 + 0.4, 0.4, 0.8]}
+                fontSize={0.18}
+                color="#3A332A"
+                anchorX="left"
+                anchorY="middle"
+                outlineWidth={0.01}
+                outlineColor="#F5EFDD"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFormulaClick?.('schrodinger', e);
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+              >
+                -ℏ²/2m · d²ψ/dx² + Vψ = Eψ
+              </Text>
+
+              {/* Energy Formula near top left */}
+              <Text
+                position={[-primaryL / 2 - 0.2, 2.4, 0]}
+                fontSize={0.16}
+                color="#8B4A3B"
+                anchorX="right"
+                anchorY="middle"
+                outlineWidth={0.01}
+                outlineColor="#F5EFDD"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFormulaClick?.('energy', e);
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+              >
+                {primaryWellType === 'infinite' 
+                  ? 'E_n = n²π²ℏ² / 2mL²' 
+                  : 'E_n (solved numerically)'}
+              </Text>
+
+              {/* Wavefunction Formula near the ribbon */}
+              <Text
+                position={[0, 1.8, 0]}
+                fontSize={0.16}
+                color="#8B4A3B"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.01}
+                outlineColor="#F5EFDD"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFormulaClick?.('wavefunction', e);
+                }}
+                onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+              >
+                {primaryWellType === 'infinite' 
+                  ? 'ψ_n(x) = √(2/L) sin(nπx/L)' 
+                  : 'ψ_n(x) (computed via FDM)'}
+              </Text>
+            </group>
+          </React.Suspense>
+        )}
 
         {/* Primary Wavefunction Extruded Ribbon (Slot A or current state) */}
         <WavefunctionRibbon

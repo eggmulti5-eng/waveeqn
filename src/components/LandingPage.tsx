@@ -1,4 +1,5 @@
 import React from 'react';
+import { MathText } from './MathText';
 
 interface LandingPageProps {
   onEnterSandbox: () => void;
@@ -16,10 +17,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Ambient floating background elements */}
       <div className="landing-ambient-bg" aria-hidden="true">
         {/* Floating equations */}
-        <div className="ambient-element eq-1">λ = h/p</div>
-        <div className="ambient-element eq-2">ΔxΔp ≥ ℏ/2</div>
-        <div className="ambient-element eq-3">∫|ψ|²dx = 1</div>
-        <div className="ambient-element eq-4">E_n = n²π²ℏ²/2mL²</div>
+        <div className="ambient-element eq-1"><MathText>{`$\\lambda = h/p$`}</MathText></div>
+        <div className="ambient-element eq-2"><MathText>{`$\\Delta x \\Delta p \\ge \\hbar/2$`}</MathText></div>
+        <div className="ambient-element eq-3"><MathText>{`$\\int |\\psi|^2 dx = 1$`}</MathText></div>
+        <div className="ambient-element eq-4"><MathText>{`$E_n = n^2 \\pi^2 \\hbar^2 / 2mL^2$`}</MathText></div>
         
         {/* Schrödinger's Cat silhouette */}
         <div className="ambient-element ambient-cat">
